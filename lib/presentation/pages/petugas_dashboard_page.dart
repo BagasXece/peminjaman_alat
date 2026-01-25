@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:peminjaman_alat/presentation/pages/login_page.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-// import '../../core/constants/app_constants.dart';
+import '../../core/constants/app_constants.dart';
 import '../../domain/entities/peminjaman.dart';
 import '../blocs/auth_cubit.dart';
 import '../blocs/peminjaman_cubit.dart';
@@ -45,6 +44,33 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
         );
   }
 
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Konfirmasi Keluar'),
+        content: Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger600,
+            ),
+            child: Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      context.read<AuthCubit>().logout();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = (context.read<AuthCubit>().state as Authenticated).user;
@@ -57,6 +83,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
             expandedHeight: 160,
             floating: false,
             pinned: true,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -78,31 +105,36 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Dashboard Petugas',
-                                  style: AppTypography.h3.copyWith(
-                                    color: Colors.white,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dashboard Petugas',
+                                    style: AppTypography.h3.copyWith(
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  user.displayNameOrEmail,
-                                  style: AppTypography.bodyLarge.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    user.displayNameOrEmail,
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              child: Icon(
-                                Icons.badge,
+                            // Tombol Keluar di AppBar
+                            IconButton(
+                              icon: Icon(
+                                Icons.logout,
                                 color: Colors.white,
                               ),
+                              tooltip: 'Keluar',
+                              onPressed: _confirmLogout,
                             ),
                           ],
                         ),
@@ -306,28 +338,6 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
-
-                // Logout
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        context.read<AuthCubit>().logout();
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      icon: Icon(Icons.logout),
-                      label: Text('Keluar'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger600,
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 32),
               ],
             ),
@@ -357,9 +367,6 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
               final user = (context.read<AuthCubit>().state as Authenticated).user;
               context.read<PeminjamanCubit>().approvePeminjaman(peminjaman.id, user.id);
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.success600,
-            ),
             child: Text('Setujui'),
           ),
         ],

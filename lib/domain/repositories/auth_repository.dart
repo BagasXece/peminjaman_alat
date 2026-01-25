@@ -4,6 +4,6 @@ import 'package:peminjaman_alat/domain/entities/app_user.dart';
 
 abstract class AuthRepository {
   Future<AppUser?> getCurrentUser();
-  Future<AppUser> login(String email, String password, String role);
+  Future<AppUser> login(String email, String password);
   Future<void> logout();
 }

@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:peminjaman_alat/presentation/pages/login_page.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-// import '../../core/constants/app_constants.dart';
+import '../../core/constants/app_constants.dart';
 import '../../domain/entities/peminjaman.dart';
 import '../blocs/auth_cubit.dart';
 import '../blocs/peminjaman_cubit.dart';
@@ -38,6 +37,33 @@ class _PeminjamDashboardPageState extends State<PeminjamDashboardPage> {
     }
   }
 
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Konfirmasi Keluar'),
+        content: Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger600,
+            ),
+            child: Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      context.read<AuthCubit>().logout();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = (context.read<AuthCubit>().state as Authenticated).user;
@@ -46,11 +72,12 @@ class _PeminjamDashboardPageState extends State<PeminjamDashboardPage> {
       backgroundColor: AppColors.neutral50,
       body: CustomScrollView(
         slivers: [
-          // App Bar
+          // App Bar dengan tombol keluar
           SliverAppBar(
             expandedHeight: 180,
             floating: false,
             pinned: true,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -72,33 +99,76 @@ class _PeminjamDashboardPageState extends State<PeminjamDashboardPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Selamat Datang,',
-                                  style: AppTypography.bodyLarge.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Selamat Datang,',
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    user.displayNameOrEmail,
+                                    style: AppTypography.h3.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Tombol Keluar di AppBar
+                            PopupMenuButton<String>(
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: Colors.white,
+                              ),
+                              offset: Offset(0, 40),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'profile',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.person_outline, size: 20),
+                                      SizedBox(width: 12),
+                                      Text('Profil'),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  user.displayNameOrEmail,
-                                  style: AppTypography.h3.copyWith(
-                                    color: Colors.white,
+                                PopupMenuDivider(),
+                                PopupMenuItem(
+                                  value: 'logout',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.logout,
+                                        size: 20,
+                                        color: AppColors.danger600,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        'Keluar',
+                                        style: TextStyle(
+                                          color: AppColors.danger600,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
-                            ),
-                            CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              child: Text(
-                                user.initials,
-                                style: AppTypography.h3.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
+                              onSelected: (value) {
+                                if (value == 'logout') {
+                                  _confirmLogout();
+                                }
+                              },
                             ),
                           ],
                         ),
@@ -304,25 +374,8 @@ class _PeminjamDashboardPageState extends State<PeminjamDashboardPage> {
                     },
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Logout Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        context.read<AuthCubit>().logout();
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        );
-                      },
-                      icon: Icon(Icons.logout),
-                      label: Text('Keluar'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger600,
-                      ),
-                    ),
-                  ),
+                  // Bottom padding agar tidak terlalu mepet
+                  const SizedBox(height: 32),
                 ],
               ),
             ),

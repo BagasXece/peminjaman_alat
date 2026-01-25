@@ -8,22 +8,35 @@ class AuthRepositoryDummy implements AuthRepository {
 
   @override
   Future<AppUser?> getCurrentUser() async {
-    await Future.delayed(Duration(milliseconds: 500)); // Simulasi network
+    await Future.delayed(Duration(milliseconds: 500));
     return _currentUser;
   }
 
   @override
-  Future<AppUser> login(String email, String password, String role) async {
+  Future<AppUser> login(String email, String password) async {
     await Future.delayed(Duration(milliseconds: 800));
     
-    // Cari user dengan role yang sesuai
-    final user = DummyData.users.firstWhere(
-      (u) => u.email == email && u.role == role,
-      orElse: () => throw Exception('User tidak ditemukan atau role tidak sesuai'),
-    );
+    // Cari user berdasarkan email (case insensitive)
+    final normalizedEmail = email.toLowerCase().trim();
     
-    _currentUser = user;
-    return user;
+    try {
+      final user = DummyData.users.firstWhere(
+        (u) => u.email.toLowerCase() == normalizedEmail,
+      );
+      
+      _currentUser = user;
+      return user;
+    } catch (e) {
+      throw Exception(
+        'Email tidak ditemukan.\n\n'
+        'Akun demo yang tersedia:\n'
+        '• mahasiswa1@student.ac.id (Peminjam)\n'
+        '• mahasiswa2@student.ac.id (Peminjam)\n'
+        '• petugas1@mesin.ac.id (Petugas)\n'
+        '• petugas2@mesin.ac.id (Petugas)\n'
+        '• admin@mesin.ac.id (Admin)'
+      );
+    }
   }
 
   @override
