@@ -248,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // Footer
                       Text(
-                        '© 2024 Jurusan Permesinan',
+                        '© 2026 Jurusan Permesinan',
                         style: AppTypography.bodySmall.copyWith(
                           color: Colors.white.withOpacity(0.6),
                         ),
