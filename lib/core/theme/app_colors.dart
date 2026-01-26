@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   AppColors._();
-  
+
   // Primary - Deep Navy (Industri/Teknik)
   static const Color primary50 = Color(0xFFEEF2FF);
   static const Color primary100 = Color(0xFFE0E7FF);
@@ -15,19 +15,19 @@ class AppColors {
   static const Color primary700 = Color(0xFF4338CA);
   static const Color primary800 = Color(0xFF3730A3);
   static const Color primary900 = Color(0xFF312E81);
-  
-  // Secondary - Amber/Orange (Aksen, Warning)
-  static const Color secondary50 = Color(0xFFFFFBEB);
-  static const Color secondary100 = Color(0xFFFEF3C7);
-  static const Color secondary200 = Color(0xFFFDE68A);
-  static const Color secondary300 = Color(0xFFFCD34D);
-  static const Color secondary400 = Color(0xFFFBBF24);
-  static const Color secondary500 = Color(0xFFF59E0B);
-  static const Color secondary600 = Color(0xFFD97706);
-  static const Color secondary700 = Color(0xFFB45309);
-  static const Color secondary800 = Color(0xFF92400E);
-  static const Color secondary900 = Color(0xFF78350F);
-  
+
+  // Secondary - Copper / Industrial Orange (Aksen, BUKAN status)
+  static const Color secondary50 = Color(0xFFFFF7ED);
+  static const Color secondary100 = Color(0xFFFFEDD5);
+  static const Color secondary200 = Color(0xFFFED7AA);
+  static const Color secondary300 = Color(0xFFFDBA74);
+  static const Color secondary400 = Color(0xFFFB923C);
+  static const Color secondary500 = Color(0xFFF97316);
+  static const Color secondary600 = Color(0xFFEA580C);
+  static const Color secondary700 = Color(0xFFC2410C);
+  static const Color secondary800 = Color(0xFF9A3412);
+  static const Color secondary900 = Color(0xFF7C2D12);
+
   // Neutral - Slate
   static const Color neutral50 = Color(0xFFF8FAFC);
   static const Color neutral100 = Color(0xFFF1F5F9);
@@ -39,7 +39,7 @@ class AppColors {
   static const Color neutral700 = Color(0xFF334155);
   static const Color neutral800 = Color(0xFF1E293B);
   static const Color neutral900 = Color(0xFF0F172A);
-  
+
   // Semantic Colors - SUCCESS (Green)
   static const Color success50 = Color(0xFFF0FDF4);
   static const Color success100 = Color(0xFFDCFCE7);
@@ -51,7 +51,7 @@ class AppColors {
   static const Color success700 = Color(0xFF15803D);
   static const Color success800 = Color(0xFF166534);
   static const Color success900 = Color(0xFF14532D);
-  
+
   // Semantic Colors - WARNING (Amber)
   static const Color warning50 = Color(0xFFFFFBEB);
   static const Color warning100 = Color(0xFFFEF3C7);
@@ -63,7 +63,7 @@ class AppColors {
   static const Color warning700 = Color(0xFFB45309);
   static const Color warning800 = Color(0xFF92400E);
   static const Color warning900 = Color(0xFF78350F);
-  
+
   // Semantic Colors - DANGER (Red)
   static const Color danger50 = Color(0xFFFEF2F2);
   static const Color danger100 = Color(0xFFFEE2E2);
@@ -75,7 +75,7 @@ class AppColors {
   static const Color danger700 = Color(0xFFB91C1C);
   static const Color danger800 = Color(0xFF991B1B);
   static const Color danger900 = Color(0xFF7F1D1D);
-  
+
   // Semantic Colors - INFO (Blue)
   static const Color info50 = Color(0xFFEFF6FF);
   static const Color info100 = Color(0xFFDBEAFE);
@@ -87,7 +87,7 @@ class AppColors {
   static const Color info700 = Color(0xFF1D4ED8);
   static const Color info800 = Color(0xFF1E40AF);
   static const Color info900 = Color(0xFF1E3A8A);
-  
+
   // Status Colors Mapping
   static Color getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -111,7 +111,7 @@ class AppColors {
         return neutral500;
     }
   }
-  
+
   static Color getStatusBgColor(String status) {
     switch (status.toLowerCase()) {
       case 'tersedia':

@@ -1,4 +1,5 @@
 // lib/data/repositories/dummy_data.dart
+
 import '../../domain/entities/app_user.dart';
 import '../../domain/entities/alat.dart';
 import '../../domain/entities/peminjaman.dart';
@@ -6,7 +7,7 @@ import '../../domain/entities/peminjaman_item.dart';
 
 class DummyData {
   DummyData._();
-  
+
   // Users
   static final users = [
     AppUser(
@@ -88,7 +89,7 @@ class DummyData {
       createdAt: DateTime(2023, 5, 15),
       updatedAt: DateTime(2024, 1, 12),
     ),
-    
+
     // Mesin Frais
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440004',
@@ -116,7 +117,7 @@ class DummyData {
       createdAt: DateTime(2023, 7, 15),
       updatedAt: DateTime(2024, 1, 11),
     ),
-    
+
     // Mesin Gerinda
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440006',
@@ -157,7 +158,7 @@ class DummyData {
       createdAt: DateTime(2023, 8, 15),
       updatedAt: DateTime(2024, 1, 12),
     ),
-    
+
     // Alat Ukur
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440009',
@@ -185,7 +186,7 @@ class DummyData {
       createdAt: DateTime(2023, 9, 1),
       updatedAt: DateTime(2024, 1, 13),
     ),
-    
+
     // Tambahan 15 unit lainnya dengan variasi status
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440011',
@@ -393,7 +394,9 @@ class DummyData {
       status: 'menunggu',
       createdAt: DateTime.now().subtract(Duration(hours: 2)),
       updatedAt: DateTime.now().subtract(Duration(hours: 2)),
-      peminjam: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440004'),
+      peminjam: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440004',
+      ),
       items: [
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440001',
@@ -402,7 +405,9 @@ class DummyData {
           jatuhTempo: DateTime.now().add(Duration(days: 7)),
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(hours: 2)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440003'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440003',
+          ),
         ),
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440002',
@@ -411,11 +416,13 @@ class DummyData {
           jatuhTempo: DateTime.now().add(Duration(days: 7)),
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(hours: 2)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440009'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440009',
+          ),
         ),
       ],
     ),
-    
+
     // Transaksi 2: Disetujui, siap pengembalian
     Peminjaman(
       id: '880e8400-e29b-41d4-a716-446655440002',
@@ -425,17 +432,25 @@ class DummyData {
       disetujuiPada: DateTime.now().subtract(Duration(days: 5)),
       createdAt: DateTime.now().subtract(Duration(days: 6)),
       updatedAt: DateTime.now().subtract(Duration(days: 5)),
-      peminjam: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440005'),
-      petugas: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440002'),
+      peminjam: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440005',
+      ),
+      petugas: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440002',
+      ),
       items: [
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440003',
           peminjamanId: '880e8400-e29b-41d4-a716-446655440002',
           alatId: '660e8400-e29b-41d4-a716-446655440002',
-          jatuhTempo: DateTime.now().subtract(Duration(days: 2)), // Terlambat 2 hari!
+          jatuhTempo: DateTime.now().subtract(
+            Duration(days: 2),
+          ), // Terlambat 2 hari!
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(days: 6)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440002'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440002',
+          ),
         ),
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440004',
@@ -444,11 +459,13 @@ class DummyData {
           jatuhTempo: DateTime.now().subtract(Duration(days: 2)),
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(days: 6)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440006'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440006',
+          ),
         ),
       ],
     ),
-    
+
     // Transaksi 3: Sebagian dikembalikan
     Peminjaman(
       id: '880e8400-e29b-41d4-a716-446655440003',
@@ -458,8 +475,12 @@ class DummyData {
       disetujuiPada: DateTime.now().subtract(Duration(days: 10)),
       createdAt: DateTime.now().subtract(Duration(days: 12)),
       updatedAt: DateTime.now().subtract(Duration(days: 3)),
-      peminjam: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440004'),
-      petugas: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440002'),
+      peminjam: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440004',
+      ),
+      petugas: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440002',
+      ),
       items: [
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440005',
@@ -471,20 +492,26 @@ class DummyData {
           dikembalikanPada: DateTime.now().subtract(Duration(days: 3)),
           terlambatHari: 0, // Tepat waktu
           totalDenda: 0,
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440010'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440010',
+          ),
         ),
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440006',
           peminjamanId: '880e8400-e29b-41d4-a716-446655440003',
           alatId: '660e8400-e29b-41d4-a716-446655440020',
-          jatuhTempo: DateTime.now().subtract(Duration(days: 5)), // Terlambat 5 hari
+          jatuhTempo: DateTime.now().subtract(
+            Duration(days: 5),
+          ), // Terlambat 5 hari
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(days: 12)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440020'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440020',
+          ),
         ),
       ],
     ),
-    
+
     // Transaksi 4: Selesai (dengan denda)
     Peminjaman(
       id: '880e8400-e29b-41d4-a716-446655440004',
@@ -494,8 +521,12 @@ class DummyData {
       disetujuiPada: DateTime.now().subtract(Duration(days: 20)),
       createdAt: DateTime.now().subtract(Duration(days: 21)),
       updatedAt: DateTime.now().subtract(Duration(days: 12)),
-      peminjam: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440005'),
-      petugas: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440003'),
+      peminjam: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440005',
+      ),
+      petugas: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440003',
+      ),
       items: [
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440007',
@@ -507,12 +538,14 @@ class DummyData {
           dikembalikanPada: DateTime.now().subtract(Duration(days: 12)),
           terlambatHari: 3,
           totalDenda: 15000, // 3 hari * Rp 5.000
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440004'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440004',
+          ),
         ),
       ],
       totalDenda: 15000,
     ),
-    
+
     // Transaksi 5: Ditolak
     Peminjaman(
       id: '880e8400-e29b-41d4-a716-446655440005',
@@ -522,8 +555,12 @@ class DummyData {
       disetujuiPada: DateTime.now().subtract(Duration(days: 3)),
       createdAt: DateTime.now().subtract(Duration(days: 4)),
       updatedAt: DateTime.now().subtract(Duration(days: 3)),
-      peminjam: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440004'),
-      petugas: users.firstWhere((u) => u.id == '550e8400-e29b-41d4-a716-446655440002'),
+      peminjam: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440004',
+      ),
+      petugas: users.firstWhere(
+        (u) => u.id == '550e8400-e29b-41d4-a716-446655440002',
+      ),
       items: [
         PeminjamanItem(
           id: '990e8400-e29b-41d4-a716-446655440008',
@@ -532,9 +569,13 @@ class DummyData {
           jatuhTempo: DateTime.now().add(Duration(days: 3)),
           status: 'dipinjam',
           createdAt: DateTime.now().subtract(Duration(days: 4)),
-          alat: alatList.firstWhere((a) => a.id == '660e8400-e29b-41d4-a716-446655440001'),
+          alat: alatList.firstWhere(
+            (a) => a.id == '660e8400-e29b-41d4-a716-446655440001',
+          ),
         ),
       ],
     ),
   ];
+
+
 }

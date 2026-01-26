@@ -1,7 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:peminjaman_alat/presentation/pages/admin_dashboard_page.dart';
+import 'package:peminjaman_alat/presentation/pages/admin/admin_dashboard_page.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository_dummy.dart';
 import 'data/repositories/alat_repository_dummy.dart';
