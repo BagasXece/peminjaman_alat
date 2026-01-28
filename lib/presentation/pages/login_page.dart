@@ -183,35 +183,36 @@ class _LoginPageState extends State<LoginPage> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 12),
+                              // const SizedBox(height: 12),
 
                               // Hint
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.info50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppColors.info200),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.info_outline,
-                                      size: 16,
-                                      color: AppColors.info600,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Demo: Password apapun diterima',
-                                        style: AppTypography.bodySmall.copyWith(
-                                          color: AppColors.info700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   padding: const EdgeInsets.all(12),
+                              //   decoration: BoxDecoration(
+                              //     color: AppColors.info50,
+                              //     borderRadius: BorderRadius.circular(8),
+                              //     border: Border.all(color: AppColors.info200),
+                              //   ),
+                              //   child: Row(
+                              //     children: [
+                              //       Icon(
+                              //         Icons.info_outline,
+                              //         size: 16,
+                              //         color: AppColors.info600,
+                              //       ),
+                              //       const SizedBox(width: 8),
+                              //       Expanded(
+                              //         child: Text(
+                              //           'Demo: Password apapun diterima',
+                              //           style: AppTypography.bodySmall.copyWith(
+                              //             color: AppColors.info700,
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              
                               const SizedBox(height: 24),
 
                               // Login Button

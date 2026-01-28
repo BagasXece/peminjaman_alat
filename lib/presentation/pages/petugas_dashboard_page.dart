@@ -184,7 +184,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     data.add({
       'type': 'header',
       'title': 'LAPORAN PEMINJAMAN ALAT',
-      'periode': 'Januari 2024',
+      'periode': 'Januari 2026',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
@@ -227,7 +227,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     data.add({
       'type': 'header',
       'title': 'LAPORAN PENGEMBALIAN ALAT',
-      'periode': 'Januari 2024',
+      'periode': 'Januari 2026',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
@@ -270,7 +270,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     data.add({
       'type': 'header',
       'title': 'LAPORAN DENDA PEMINJAMAN',
-      'periode': 'Januari 2024',
+      'periode': 'Januari 2026',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
@@ -304,7 +304,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     data.add({
       'type': 'header',
       'title': 'LAPORAN STATUS ALAT',
-      'periode': 'Januari 2024',
+      'periode': 'Januari 2026',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 

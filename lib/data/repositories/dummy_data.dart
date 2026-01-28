@@ -15,35 +15,35 @@ class DummyData {
       email: 'admin@mesin.ac.id',
       displayName: 'Budi Admin',
       role: 'admin',
-      createdAt: DateTime(2024, 1, 15),
+      createdAt: DateTime(2026, 1, 15),
     ),
     AppUser(
       id: '550e8400-e29b-41d4-a716-446655440002',
       email: 'petugas1@mesin.ac.id',
       displayName: 'Siti Petugas',
       role: 'petugas',
-      createdAt: DateTime(2024, 1, 16),
+      createdAt: DateTime(2026, 1, 16),
     ),
     AppUser(
       id: '550e8400-e29b-41d4-a716-446655440003',
       email: 'petugas2@mesin.ac.id',
       displayName: 'Ahmad Petugas',
       role: 'petugas',
-      createdAt: DateTime(2024, 1, 17),
+      createdAt: DateTime(2026, 1, 17),
     ),
     AppUser(
       id: '550e8400-e29b-41d4-a716-446655440004',
       email: 'mahasiswa1@student.ac.id',
       displayName: 'Dewi Mahasiswa',
       role: 'peminjam',
-      createdAt: DateTime(2024, 1, 20),
+      createdAt: DateTime(2026, 1, 20),
     ),
     AppUser(
       id: '550e8400-e29b-41d4-a716-446655440005',
       email: 'mahasiswa2@student.ac.id',
       displayName: 'Rudi Siswa',
       role: 'peminjam',
-      createdAt: DateTime(2024, 1, 21),
+      createdAt: DateTime(2026, 1, 21),
     ),
   ];
 
@@ -61,7 +61,7 @@ class DummyData {
       namaSubKategori: 'Bubut CNC',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 6, 1),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440002',
@@ -74,7 +74,7 @@ class DummyData {
       namaSubKategori: 'Bubut CNC',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 6, 1),
-      updatedAt: DateTime(2024, 1, 15),
+      updatedAt: DateTime(2026, 1, 15),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440003',
@@ -87,7 +87,7 @@ class DummyData {
       namaSubKategori: 'Bubut Manual',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 5, 15),
-      updatedAt: DateTime(2024, 1, 12),
+      updatedAt: DateTime(2026, 1, 12),
     ),
 
     // Mesin Frais
@@ -102,7 +102,7 @@ class DummyData {
       namaSubKategori: 'Frais Vertikal',
       namaKategori: 'Mesin Frais',
       createdAt: DateTime(2023, 7, 1),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440005',
@@ -115,7 +115,7 @@ class DummyData {
       namaSubKategori: 'Frais Horizontal',
       namaKategori: 'Mesin Frais',
       createdAt: DateTime(2023, 7, 15),
-      updatedAt: DateTime(2024, 1, 11),
+      updatedAt: DateTime(2026, 1, 11),
     ),
 
     // Mesin Gerinda
@@ -130,7 +130,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Surface',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 1),
-      updatedAt: DateTime(2024, 1, 14),
+      updatedAt: DateTime(2026, 1, 14),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440007',
@@ -143,7 +143,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Surface',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 1),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440008',
@@ -156,7 +156,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Cylindrical',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 15),
-      updatedAt: DateTime(2024, 1, 12),
+      updatedAt: DateTime(2026, 1, 12),
     ),
 
     // Alat Ukur
@@ -171,7 +171,7 @@ class DummyData {
       namaSubKategori: 'Caliper Digital',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 1),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440010',
@@ -184,7 +184,7 @@ class DummyData {
       namaSubKategori: 'Micrometer',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 1),
-      updatedAt: DateTime(2024, 1, 13),
+      updatedAt: DateTime(2026, 1, 13),
     ),
 
     // Tambahan 15 unit lainnya dengan variasi status
@@ -199,7 +199,7 @@ class DummyData {
       namaSubKategori: 'Bubut CNC',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 6, 15),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440012',
@@ -212,7 +212,7 @@ class DummyData {
       namaSubKategori: 'Bubut Manual',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 5, 20),
-      updatedAt: DateTime(2024, 1, 5),
+      updatedAt: DateTime(2026, 1, 5),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440013',
@@ -225,7 +225,7 @@ class DummyData {
       namaSubKategori: 'Frais Vertikal',
       namaKategori: 'Mesin Frais',
       createdAt: DateTime(2023, 7, 10),
-      updatedAt: DateTime(2024, 1, 11),
+      updatedAt: DateTime(2026, 1, 11),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440014',
@@ -238,7 +238,7 @@ class DummyData {
       namaSubKategori: 'Frais Horizontal',
       namaKategori: 'Mesin Frais',
       createdAt: DateTime(2023, 7, 20),
-      updatedAt: DateTime(2024, 1, 8),
+      updatedAt: DateTime(2026, 1, 8),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440015',
@@ -251,7 +251,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Surface',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 10),
-      updatedAt: DateTime(2024, 1, 12),
+      updatedAt: DateTime(2026, 1, 12),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440016',
@@ -264,7 +264,7 @@ class DummyData {
       namaSubKategori: 'Caliper Digital',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 5),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440017',
@@ -277,7 +277,7 @@ class DummyData {
       namaSubKategori: 'Micrometer',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 5),
-      updatedAt: DateTime(2024, 1, 11),
+      updatedAt: DateTime(2026, 1, 11),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440018',
@@ -290,7 +290,7 @@ class DummyData {
       namaSubKategori: 'Height Gauge',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 10),
-      updatedAt: DateTime(2024, 1, 12),
+      updatedAt: DateTime(2026, 1, 12),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440019',
@@ -303,7 +303,7 @@ class DummyData {
       namaSubKategori: 'Bubut CNC',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 6, 20),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440020',
@@ -316,7 +316,7 @@ class DummyData {
       namaSubKategori: 'Frais Vertikal',
       namaKategori: 'Mesin Frais',
       createdAt: DateTime(2023, 7, 15),
-      updatedAt: DateTime(2024, 1, 16),
+      updatedAt: DateTime(2026, 1, 16),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440021',
@@ -329,7 +329,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Cylindrical',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 20),
-      updatedAt: DateTime(2024, 1, 11),
+      updatedAt: DateTime(2026, 1, 11),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440022',
@@ -342,7 +342,7 @@ class DummyData {
       namaSubKategori: 'Dial Indicator',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 15),
-      updatedAt: DateTime(2024, 1, 10),
+      updatedAt: DateTime(2026, 1, 10),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440023',
@@ -355,7 +355,7 @@ class DummyData {
       namaSubKategori: 'Bubut Manual',
       namaKategori: 'Mesin Bubut',
       createdAt: DateTime(2023, 5, 25),
-      updatedAt: DateTime(2024, 1, 12),
+      updatedAt: DateTime(2026, 1, 12),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440024',
@@ -368,7 +368,7 @@ class DummyData {
       namaSubKategori: 'Gerinda Surface',
       namaKategori: 'Mesin Gerinda',
       createdAt: DateTime(2023, 8, 12),
-      updatedAt: DateTime(2024, 1, 5),
+      updatedAt: DateTime(2026, 1, 5),
     ),
     Alat(
       id: '660e8400-e29b-41d4-a716-446655440025',
@@ -381,7 +381,7 @@ class DummyData {
       namaSubKategori: 'Caliper Digital',
       namaKategori: 'Alat Ukur',
       createdAt: DateTime(2023, 9, 8),
-      updatedAt: DateTime(2024, 1, 11),
+      updatedAt: DateTime(2026, 1, 11),
     ),
   ];
 
