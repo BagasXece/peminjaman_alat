@@ -2,16 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
 // import '../../core/constants/app_constants.dart';
-import '../../domain/entities/alat.dart';
-import '../blocs/alat_cubit.dart';
-import '../blocs/auth_cubit.dart';
-import '../blocs/peminjaman_cubit.dart';
-import '../widgets/app_card.dart';
-import '../widgets/empty_state.dart';
-import '../widgets/status_badge.dart';
+import '../../../domain/entities/alat.dart';
+import '../../blocs/alat/alat_cubit.dart';
+import '../../blocs/auth/auth_cubit.dart';
+import '../../blocs/peminjaman/peminjaman_cubit.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/status_badge.dart';
 
 class FormPeminjamanPage extends StatefulWidget {
   const FormPeminjamanPage({Key? key}) : super(key: key);

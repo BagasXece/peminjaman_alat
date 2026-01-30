@@ -104,6 +104,7 @@ class AppColors {
       case 'hilang':
       case 'nonaktif':
       case 'ditolak':
+      case 'dibatalkan':
         return danger500;
       case 'sebagian':
         return secondary500;

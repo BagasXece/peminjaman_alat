@@ -6,13 +6,13 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 // import '../../core/constants/app_constants.dart';
 import '../../domain/entities/peminjaman.dart';
-import '../blocs/auth_cubit.dart';
-import '../blocs/peminjaman_cubit.dart';
+import '../blocs/auth/auth_cubit.dart';
+import '../blocs/peminjaman/peminjaman_cubit.dart';
 import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/status_badge.dart';
-import 'form_peminjaman_page.dart';
-import 'detail_peminjaman_page.dart';
+import 'peminjaman/form_peminjaman_page.dart';
+import 'peminjaman/detail_peminjaman_page.dart';
 
 class PeminjamDashboardPage extends StatefulWidget {
   const PeminjamDashboardPage({Key? key}) : super(key: key);

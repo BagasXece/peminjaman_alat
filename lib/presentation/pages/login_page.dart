@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/constants/app_constants.dart';
-import '../blocs/auth_cubit.dart';
+import '../blocs/auth/auth_cubit.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<AuthCubit, AuthState>(
+      body: BlocListener<AuthCubit, AuthCState>(
         listener: (context, state) {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -216,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(height: 24),
 
                               // Login Button
-                              BlocBuilder<AuthCubit, AuthState>(
+                              BlocBuilder<AuthCubit, AuthCState>(
                                 builder: (context, state) {
                                   final isLoading = state is AuthLoading;
                                   

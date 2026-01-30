@@ -2,16 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:peminjaman_alat/presentation/pages/form_pengembalian_page.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
-import '../../core/constants/app_constants.dart';
-import '../../domain/entities/peminjaman.dart';
-import '../../domain/entities/peminjaman_item.dart';
-import '../blocs/auth_cubit.dart';
-import '../blocs/peminjaman_cubit.dart';
-import '../widgets/app_card.dart';
-import '../widgets/status_badge.dart';
+import 'package:peminjaman_alat/presentation/pages/pengembalian/form_pengembalian_page.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../domain/entities/peminjaman.dart';
+import '../../../domain/entities/peminjaman_item.dart';
+import '../../blocs/auth/auth_cubit.dart';
+import '../../blocs/peminjaman/peminjaman_cubit.dart';
+import '../../widgets/app_card.dart';
+import '../../widgets/status_badge.dart';
 
 class DetailPeminjamanPage extends StatefulWidget {
   final String peminjamanId;

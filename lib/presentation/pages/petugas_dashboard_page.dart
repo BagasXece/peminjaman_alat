@@ -7,13 +7,13 @@ import '../../core/theme/app_typography.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/repositories/dummy_data.dart';
 import '../../domain/entities/peminjaman.dart';
-import '../blocs/auth_cubit.dart';
-import '../blocs/peminjaman_cubit.dart';
+import '../blocs/auth/auth_cubit.dart';
+import '../blocs/peminjaman/peminjaman_cubit.dart';
 import '../widgets/app_card.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/status_badge.dart';
-import 'detail_peminjaman_page.dart';
-import 'form_pengembalian_page.dart';
+import 'peminjaman/detail_peminjaman_page.dart';
+import 'pengembalian/form_pengembalian_page.dart';
 
 class PetugasDashboardPage extends StatefulWidget {
   const PetugasDashboardPage({Key? key}) : super(key: key);
@@ -29,6 +29,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     {'id': 'all', 'label': 'Semua', 'color': AppColors.neutral600},
     {'id': 'menunggu', 'label': 'Menunggu', 'color': AppColors.warning600},
     {'id': 'disetujui', 'label': 'Disetujui', 'color': AppColors.info600},
+    {'id': 'ditolak', 'label': 'Ditolak', 'color': AppColors.danger600},
     {'id': 'sebagian', 'label': 'Sebagian', 'color': AppColors.secondary600},
     {'id': 'selesai', 'label': 'Selesai', 'color': AppColors.success600},
   ];

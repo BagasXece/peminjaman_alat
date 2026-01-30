@@ -1,8 +1,8 @@
 // lib/presentation/blocs/alat_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/alat.dart';
-import '../../domain/repositories/alat_repository.dart';
+import '../../../domain/entities/alat.dart';
+import '../../../domain/repositories/alat_repository.dart';
 
 part 'alat_state.dart';
 
