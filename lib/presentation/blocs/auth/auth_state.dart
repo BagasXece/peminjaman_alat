@@ -104,21 +104,25 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<void> updateUser(
-    String userId, {
-    String? displayName,
-    String? role,
-  }) async {
-    emit(UserLoading());
-    try {
-      final user = await _repository.updateUser(
-        userId,
-        displayName: displayName,
-        role: role,
-      );
-      emit(UserUpdated(user));
-      await loadUsers();
-    } catch (e) {
-      emit(UserError(e.toString()));
-    }
+  String userId, {
+  String? displayName,
+  String? role,
+  String? email,
+  String? password,
+}) async {
+  emit(UserLoading());
+  try {
+    final user = await _repository.updateUser(
+      userId,
+      displayName: displayName,
+      role: role,
+      email: email,
+      password: password,
+    );
+    emit(UserUpdated(user));
+    emit(UsersLoaded(await _repository.getAllUsers())); // Refresh list
+  } catch (e) {
+    emit(UserError(e.toString()));
   }
+}
 }

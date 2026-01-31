@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../core/network/supabase_client.dart';
 import '../../domain/entities/app_user.dart';
 import '../models/app_user_model.dart';
@@ -13,7 +12,10 @@ abstract class UserRepository {
     required String role,
   });
   Future<void> deleteUser(String userId);
-  Future<AppUser> updateUser(String userId, {
+  Future<AppUser> updateUser(
+    String userId, {
+    String? email,
+    String? password,
     String? displayName,
     String? role,
   });
@@ -27,14 +29,11 @@ class UserRepositorySupabase implements UserRepository {
   @override
   Future<List<AppUser>> getAllUsers() async {
     try {
-      // Validasi: hanya admin yang boleh melihat semua user
-      if (_supabase.currentUserRole != 'admin') {
-        throw Exception('Unauthorized: Hanya admin yang dapat melihat daftar user');
-      }
-
+      // Ambil langsung dari tabel (bisa juga via Edge Function kalau ada filtering kompleks)
       final response = await _supabase.client
           .from('app_users')
           .select()
+          .isFilter('deleted_at', null) // Filter soft delete
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -53,12 +52,6 @@ class UserRepositorySupabase implements UserRepository {
     required String role,
   }) async {
     try {
-      // Validasi: hanya admin yang boleh membuat user
-      if (_supabase.currentUserRole != 'admin') {
-        throw Exception('Unauthorized: Hanya admin yang dapat membuat user');
-      }
-
-      // Panggil Edge Function create-user
       final response = await _supabase.client.functions.invoke(
         'create-user',
         body: {
@@ -74,67 +67,100 @@ class UserRepositorySupabase implements UserRepository {
         throw Exception('Gagal membuat user: $error');
       }
 
-      // Ambil data user yang baru dibuat dari tabel app_users
-      // Trigger handle_new_user sudah membuat record ini
-      final newUserEmail = response.data['user']['email'];
-      await Future.delayed(Duration(milliseconds: 500)); // Tunggu trigger jalan
+      // Ambil data user yang baru dibuat
+      await Future.delayed(Duration(milliseconds: 500)); // Tunggu trigger
       
       final userData = await _supabase.client
           .from('app_users')
           .select()
-          .eq('email', newUserEmail)
+          .eq('email', email)
           .single();
 
       return AppUserModel.fromSupabase(userData);
       
+    } on FunctionException catch (e) {
+      throw Exception('Edge Function Error: ${e.details}');
     } catch (e) {
       throw Exception('Gagal membuat user: $e');
     }
   }
 
   @override
-  Future<void> deleteUser(String userId) async {
-    try {
-      // Validasi: hanya admin yang boleh menghapus
-      if (_supabase.currentUserRole != 'admin') {
-        throw Exception('Unauthorized');
-      }
-
-      // Hapus dari auth (cascade ke app_users karena FK)
-      await _supabase.client.auth.admin.deleteUser(userId);
-      
-    } catch (e) {
-      throw Exception('Gagal menghapus user: $e');
-    }
-  }
-
-  @override
-  Future<AppUser> updateUser(String userId, {
+  Future<AppUser> updateUser(
+    String userId, {
+    String? email,
+    String? password,
     String? displayName,
     String? role,
   }) async {
     try {
-      // Validasi: hanya admin yang boleh update
-      if (_supabase.currentUserRole != 'admin') {
-        throw Exception('Unauthorized');
+      print('DEBUG: Updating user via Edge Function: $userId');
+      
+      final response = await _supabase.client.functions.invoke(
+        'update-user',
+        body: {
+          'user_id': userId,
+          'updates': {
+            if (email != null) 'email': email,
+            if (password != null) 'password': password,
+            if (displayName != null) 'display_name': displayName,
+            if (role != null) 'role': role,
+          }
+        },
+      );
+
+      if (response.status != 200) {
+        final error = response.data['error'] ?? 'Unknown error';
+        throw Exception('Gagal update user: $error');
       }
 
-      final updates = <String, dynamic>{};
-      if (displayName != null) updates['display_name'] = displayName;
-      if (role != null) updates['role'] = role;
-      updates['updated_at'] = DateTime.now().toIso8601String();
+      // Return data dari response Edge Function (sudah include app_user)
+      final appUserData = response.data['app_user'];
+      if (appUserData != null) {
+        return AppUserModel.fromSupabase(appUserData);
+      }
 
-      final response = await _supabase.client
+      // Fallback: fetch ulang dari tabel
+      final userData = await _supabase.client
           .from('app_users')
-          .update(updates)
-          .eq('id_user', userId)
           .select()
+          .eq('id_user', userId)
           .single();
 
-      return AppUserModel.fromSupabase(response);
+      return AppUserModel.fromSupabase(userData);
       
+    } on FunctionException catch (e) {
+      print('DEBUG: Edge Function Error: ${e.details}');
+      throw Exception('Gagal update user: ${e.details}');
     } catch (e) {
       throw Exception('Gagal update user: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      // [PILIHAN 1] Soft Delete via Edge Function (Rekomendasi)
+      final response = await _supabase.client.functions.invoke(
+        'delete-user', // Anda perlu buat edge function ini juga
+        body: {'user_id': userId},
+      );
+
+      if (response.status != 200) {
+        final error = response.data['error'] ?? 'Unknown error';
+        throw Exception('Gagal hapus user: $error');
+      }
+
+      // [PILIHAN 2] Soft Delete langsung (tanpa edge function)
+      // await _supabase.client
+      //     .from('app_users')
+      //     .update({'deleted_at': DateTime.now().toIso8601String()})
+      //     .eq('id_user', userId);
+      
+    } on FunctionException catch (e) {
+      throw Exception('Gagal menghapus user: ${e.details}');
+    } catch (e) {
+      throw Exception('Gagal menghapus user: $e');
     }
   }
 }

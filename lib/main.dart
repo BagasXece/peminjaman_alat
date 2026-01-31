@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
+import 'package:peminjaman_alat/core/services/session_manager.dart';
 import 'package:peminjaman_alat/data/repositories/auth_repository_supabase.dart';
 import 'package:peminjaman_alat/data/repositories/user_repository_supabase.dart';
 import 'package:peminjaman_alat/presentation/blocs/auth/auth_state.dart';
@@ -19,14 +20,18 @@ import 'presentation/pages/login_page.dart';
 import 'presentation/pages/peminjam_dashboard_page.dart';
 import 'presentation/pages/petugas_dashboard_page.dart';
 
+// lib/main.dart
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
     url: "https://ewqalbtfcpntbpullukp.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3cWFsYnRmY3BudGJwdWxsdWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNjg2OTgsImV4cCI6MjA3MDc0NDY5OH0.Pg1SYw-2MJTFAXpPu8UNqDHnw47LwaDHmutZCvFwEAU",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3cWFsYnRmY3BudGJwdWxsdWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNjg2OTgsImV4cCI6MjA3MDc0NDY5OH0.Pg1SYw-2MJTFAXpPu8UNqDHnw47LwaDHmutZCvFwEAU",
   );
+
+  // [PENTING] Initialize SessionManager
+  await SessionManager().initialize();
 
   runApp(const MyApp());
 }
@@ -41,13 +46,17 @@ class MyApp extends StatelessWidget {
     final alatRepository = AlatRepositoryDummy();
     final peminjamanRepository = PeminjamanRepositoryDummy();
     final authRepository = AuthRepositorySupabase(supabaseClient);
+    final userRepository = UserRepositorySupabase(supabaseClient); // Buat sekali saja
 
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit(authRepository)),
         BlocProvider(create: (context) => AlatCubit(alatRepository)),
+        BlocProvider(create: (context) => PeminjamanCubit(peminjamanRepository)),
+        // [PERBAIKAN] Sediakan UserCubit di root agar bisa diakses semua
         BlocProvider(
-          create: (context) => PeminjamanCubit(peminjamanRepository),
+          create: (context) => UserCubit(userRepository),
+          lazy: true, // Jangan buat sampai diperlukan
         ),
       ],
       child: MaterialApp(
@@ -56,15 +65,11 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         home: const AppNavigator(),
         routes: {
-          // Tambahkan route untuk user management (protected)
           '/admin/users': (context) {
-            final supabaseClient = SupabaseService();
-            final userRepository = UserRepositorySupabase(supabaseClient);
-
             return RoleGuard(
               allowedRoles: ['admin'],
-              child: BlocProvider(
-                create: (_) => UserCubit(userRepository)..loadUsers(),
+              child: BlocProvider.value(
+                value: context.read<UserCubit>()..loadUsers(), // Gunakan instance yang sama
                 child: const UserManagementPage(),
               ),
             );

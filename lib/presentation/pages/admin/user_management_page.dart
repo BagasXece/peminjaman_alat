@@ -1,8 +1,9 @@
+// lib/presentation/pages/admin/user_management_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:peminjaman_alat/presentation/blocs/auth/auth_state.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/validators.dart';
 import '../../../domain/entities/app_user.dart';
 import '../../widgets/app_card.dart';
@@ -18,7 +19,15 @@ class _UserManagementPageState extends State<UserManagementPage> {
   @override
   void initState() {
     super.initState();
-    // context.read<UserCubit>().loadUsers();
+    // [PENTING] Load users saat halaman dibuka
+    _loadUsers();
+  }
+
+  void _loadUsers() {
+    // Delay sedikit untuk memastikan context sudah ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserCubit>().loadUsers();
+    });
   }
 
   @override
@@ -27,6 +36,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
       appBar: AppBar(
         title: Text('Manajemen User'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _loadUsers,
+            tooltip: 'Refresh',
+          ),
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => _showCreateUserDialog(context),
@@ -40,38 +54,85 @@ class _UserManagementPageState extends State<UserManagementPage> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: AppColors.danger500,
+                duration: Duration(seconds: 4),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: _loadUsers,
+                ),
               ),
             );
           } else if (state is UserCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('User berhasil dibuat'),
+                content: Text('User ${state.user.displayNameOrEmail} berhasil dibuat'),
+                backgroundColor: AppColors.success500,
+              ),
+            );
+          } else if (state is UserUpdated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('User berhasil diupdate'),
                 backgroundColor: AppColors.success500,
               ),
             );
           }
         },
         builder: (context, state) {
-          if (state is UserLoading) {
+          if (state is UserLoading && state is! UsersLoaded) {
             return Center(child: CircularProgressIndicator());
           }
           
           if (state is UsersLoaded) {
-            return ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: state.users.length,
-              itemBuilder: (context, index) {
-                final user = state.users[index];
-                return _UserCard(
-                  user: user,
-                  onDelete: () => _confirmDelete(context, user),
-                  onEdit: () => _showEditDialog(context, user),
-                );
-              },
+            if (state.users.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text('Belum ada user terdaftar'),
+                  ],
+                ),
+              );
+            }
+            
+            return RefreshIndicator(
+              onRefresh: () async => _loadUsers(),
+              child: ListView.builder(
+                padding: EdgeInsets.all(16),
+                itemCount: state.users.length,
+                itemBuilder: (context, index) {
+                  final user = state.users[index];
+                  return _UserCard(
+                    user: user,
+                    onDelete: () => _confirmDelete(context, user),
+                    onEdit: () => _showEditDialog(context, user),
+                  );
+                },
+              ),
             );
           }
           
-          return Center(child: Text('Gagal memuat data'));
+          if (state is UserError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: AppColors.danger500),
+                  SizedBox(height: 16),
+                  Text('Terjadi kesalahan', style: TextStyle(fontSize: 18)),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: _loadUsers,
+                    child: Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          return Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -96,28 +157,45 @@ class _UserManagementPageState extends State<UserManagementPage> {
               children: [
                 TextFormField(
                   controller: nameCtrl,
-                  decoration: InputDecoration(labelText: 'Nama Lengkap'),
-                  validator: (v) => Validators.validateRequired(v, 'Nama'),
+                  decoration: InputDecoration(
+                    labelText: 'Nama Lengkap',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  validator: (v) => v == null || v.isEmpty ? 'Nama wajib diisi' : null,
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 16),
                 TextFormField(
                   controller: emailCtrl,
-                  decoration: InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
                   validator: Validators.validateEmail,
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 16),
                 TextFormField(
                   controller: passwordCtrl,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Icons.lock),
+                  ),
                   obscureText: true,
-                  validator: Validators.validatePassword,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Password wajib diisi';
+                    if (v.length < 6) return 'Password minimal 6 karakter';
+                    return null;
+                  },
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: selectedRole,
-                  decoration: InputDecoration(labelText: 'Role'),
+                  decoration: InputDecoration(
+                    labelText: 'Role',
+                    prefixIcon: Icon(Icons.admin_panel_settings),
+                  ),
                   items: [
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    DropdownMenuItem(value: 'admin', child: Text('Administrator')),
                     DropdownMenuItem(value: 'petugas', child: Text('Petugas')),
                     DropdownMenuItem(value: 'peminjam', child: Text('Peminjam')),
                   ],
@@ -138,7 +216,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 context.read<UserCubit>().createUser(
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text,
-                  displayName: nameCtrl.text,
+                  displayName: nameCtrl.text.trim(),
                   role: selectedRole,
                 );
                 Navigator.pop(context);
@@ -156,7 +234,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hapus User?'),
-        content: Text('Yakin ingin menghapus ${user.displayNameOrEmail}?'),
+        content: Text('Yakin ingin menghapus user "${user.displayNameOrEmail}"?\n\nEmail: ${user.email}\nRole: ${user.role}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -176,32 +254,50 @@ class _UserManagementPageState extends State<UserManagementPage> {
   }
 
   void _showEditDialog(BuildContext context, AppUser user) {
-    final nameCtrl = TextEditingController(text: user.displayName);
+    final formKey = GlobalKey<FormState>();
+    final nameCtrl = TextEditingController(text: user.displayName ?? '');
     String selectedRole = user.role;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Edit User'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: InputDecoration(labelText: 'Nama'),
-            ),
-            SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: selectedRole,
-              decoration: InputDecoration(labelText: 'Role'),
-              items: [
-                DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                DropdownMenuItem(value: 'petugas', child: Text('Petugas')),
-                DropdownMenuItem(value: 'peminjam', child: Text('Peminjam')),
-              ],
-              onChanged: (v) => selectedRole = v!,
-            ),
-          ],
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                user.email,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Nama',
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (v) => v == null || v.isEmpty ? 'Nama wajib diisi' : null,
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: InputDecoration(
+                  labelText: 'Role',
+                  prefixIcon: Icon(Icons.admin_panel_settings),
+                ),
+                items: [
+                  DropdownMenuItem(value: 'admin', child: Text('Administrator')),
+                  DropdownMenuItem(value: 'petugas', child: Text('Petugas')),
+                  DropdownMenuItem(value: 'peminjam', child: Text('Peminjam')),
+                ],
+                onChanged: (v) {
+                  if (v != null) selectedRole = v;
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -210,12 +306,14 @@ class _UserManagementPageState extends State<UserManagementPage> {
           ),
           FilledButton(
             onPressed: () {
-              context.read<UserCubit>().updateUser(
-                user.id,
-                displayName: nameCtrl.text,
-                role: selectedRole,
-              );
-              Navigator.pop(context);
+              if (formKey.currentState!.validate()) {
+                context.read<UserCubit>().updateUser(
+                  user.id,
+                  displayName: nameCtrl.text.trim(),
+                  role: selectedRole,
+                );
+                Navigator.pop(context);
+              }
             },
             child: Text('Update'),
           ),
@@ -224,6 +322,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     );
   }
 }
+
 
 class _UserCard extends StatelessWidget {
   final AppUser user;

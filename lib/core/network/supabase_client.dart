@@ -1,3 +1,6 @@
+// lib/core/network/supabase_client.dart
+
+import 'package:peminjaman_alat/core/services/session_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -10,15 +13,28 @@ class SupabaseService {
     client = Supabase.instance.client;
   }
   
-  //current user info
   User? get currentUser => client.auth.currentUser;
   String? get currentUserId => client.auth.currentUser?.id;
   Session? get currentSession => client.auth.currentSession;
   
-  // Auth state stream
   Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
   
-  // Helper untuk RPC calls
+  // [PERBAIKAN] Priority: Auth Metadata > SessionManager > null
+  String? get currentUserRole {
+    // Coba ambil dari metadata dulu
+    final metadataRole = client.auth.currentUser?.userMetadata?['role'] as String?;
+    if (metadataRole != null) return metadataRole;
+    
+    // Fallback ke SessionManager
+    final sessionRole = SessionManager().userRole;
+    if (sessionRole != null) return sessionRole;
+    
+    return null;
+  }
+  
+  // Helper untuk cek apakah user adalah admin
+  bool get isAdmin => currentUserRole == 'admin';
+  
   Future<Map<String, dynamic>?> rpc(
     String functionName, {
     Map<String, dynamic>? params,
@@ -37,10 +53,5 @@ class SupabaseService {
     } on PostgrestException catch (e) {
       throw Exception('Database Error: ${e.message}');
     }
-  }
-  
-  // Check current user role from metadata
-  String? get currentUserRole {
-    return client.auth.currentUser?.userMetadata?['role'] as String?;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:peminjaman_alat/core/services/session_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/network/supabase_client.dart';
 import '../../domain/entities/app_user.dart';
@@ -29,33 +30,52 @@ class AuthRepositorySupabase implements AuthRepository {
   }
 
   @override
-  Future<AppUser> login(String email, String password) async {
-    try {
-      // 1. Login ke Supabase Auth
-      final response = await _supabase.client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+Future<AppUser> login(String email, String password) async {
+  try {
+    // 1. Login ke Supabase Auth
+    final response = await _supabase.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
 
-      if (response.user == null) {
-        throw Exception('Login gagal: User tidak ditemukan');
-      }
-
-      // 2. Ambil data lengkap dari tabel app_users (termasuk role)
-      final userData = await _supabase.client
-          .from('app_users')
-          .select()
-          .eq('id_user', response.user!.id)
-          .single();
-
-      return AppUserModel.fromSupabase(userData);
-      
-    } on AuthException catch (e) {
-      throw Exception(_getAuthErrorMessage(e.message));
-    } catch (e) {
-      throw Exception('Terjadi kesalahan saat login: $e');
+    if (response.user == null) {
+      throw Exception('Login gagal: User tidak ditemukan');
     }
+
+    // 2. Ambil data lengkap dari tabel app_users
+    final userData = await _supabase.client
+        .from('app_users')
+        .select()
+        .eq('id_user', response.user!.id)
+        .single();
+
+    final appUser = AppUserModel.fromSupabase(userData);
+    
+    // 3. [PENTING] Update metadata dengan role untuk digunakan oleh currentUserRole
+    await _supabase.client.auth.updateUser(
+      UserAttributes(
+        data: {
+          'role': appUser.role,
+          'display_name': appUser.displayName,
+        },
+      ),
+    );
+
+    // 4. Simpan ke SessionManager lokal
+    await SessionManager().saveSession(
+      appUser.id,
+      appUser.role,
+      appUser.email,
+    );
+
+    return appUser;
+    
+  } on AuthException catch (e) {
+    throw Exception(_getAuthErrorMessage(e.message));
+  } catch (e) {
+    throw Exception('Terjadi kesalahan saat login: $e');
   }
+}
 
   @override
   Future<void> logout() async {
