@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/constants/app_constants.dart';
-import '../../data/repositories/dummy_data.dart';
+import '../../domain/entities/alat.dart';
 import '../../domain/entities/peminjaman.dart';
+import '../blocs/alat/alat_cubit.dart';
 import '../blocs/auth/auth_cubit.dart';
 import '../blocs/peminjaman/peminjaman_cubit.dart';
 import '../widgets/app_card.dart';
@@ -16,7 +16,7 @@ import 'peminjaman/detail_peminjaman_page.dart';
 import 'pengembalian/form_pengembalian_page.dart';
 
 class PetugasDashboardPage extends StatefulWidget {
-  const PetugasDashboardPage({Key? key}) : super(key: key);
+  const PetugasDashboardPage({super.key});
 
   @override
   State<PetugasDashboardPage> createState() => _PetugasDashboardPageState();
@@ -38,6 +38,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
   void initState() {
     super.initState();
     _loadData();
+    context.read<AlatCubit>().loadAlat(); // Load alat untuk laporan alat
   }
 
   void _loadData() {
@@ -50,14 +51,14 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Konfirmasi Keluar'),
-        content: Text('Apakah Anda yakin ingin keluar?'),
+        title: const Text('Konfirmasi Keluar'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger600),
-            child: Text('Keluar'),
+            child: const Text('Keluar'),
           ),
         ],
       ),
@@ -68,13 +69,26 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     }
   }
 
-  // ==================== LAPORAN DARI DATA DUMMY ====================
+  // ==================== LAPORAN DARI DATA STATE ====================
 
   void _showLaporanMenu() {
+    final peminjamanState = context.read<PeminjamanCubit>().state;
+    final alatState = context.read<AlatCubit>().state;
+    
+    if (peminjamanState is! PeminjamanLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data peminjaman belum dimuat')),
+      );
+      return;
+    }
+
+    final peminjamanList = peminjamanState.peminjaman;
+    final List<Alat> alatList = alatState is AlatLoaded ? alatState.alat : [];
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => DraggableScrollableSheet(
@@ -109,9 +123,9 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                 _LaporanCard(
                   icon: Icons.assignment,
                   title: 'Laporan Peminjaman',
-                  subtitle: '${DummyData.peminjamanList.length} total transaksi',
+                  subtitle: '${peminjamanList.length} total transaksi',
                   color: AppColors.info600,
-                  onTap: () => _generateLaporanPeminjaman(),
+                  onTap: () => _generateLaporanPeminjaman(peminjamanList),
                 ),
                 const SizedBox(height: 12),
 
@@ -119,9 +133,9 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                 _LaporanCard(
                   icon: Icons.assignment_return,
                   title: 'Laporan Pengembalian',
-                  subtitle: '${DummyData.peminjamanList.where((p) => p.status == 'selesai' || p.status == 'sebagian').length} transaksi selesai',
+                  subtitle: '${peminjamanList.where((p) => p.status == 'selesai' || p.status == 'sebagian').length} transaksi selesai',
                   color: AppColors.success600,
-                  onTap: () => _generateLaporanPengembalian(),
+                  onTap: () => _generateLaporanPengembalian(peminjamanList),
                 ),
                 const SizedBox(height: 12),
 
@@ -129,9 +143,9 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                 _LaporanCard(
                   icon: Icons.money_off,
                   title: 'Laporan Denda',
-                  subtitle: 'Rp ${NumberFormat('#,###').format(_calculateTotalDenda())} total denda',
+                  subtitle: 'Rp ${NumberFormat('#,###').format(_calculateTotalDenda(peminjamanList))} total denda',
                   color: AppColors.danger600,
-                  onTap: () => _generateLaporanDenda(),
+                  onTap: () => _generateLaporanDenda(peminjamanList),
                 ),
                 const SizedBox(height: 12),
 
@@ -139,10 +153,12 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                 _LaporanCard(
                   icon: Icons.build,
                   title: 'Laporan Status Alat',
-                  subtitle: '${DummyData.alatList.where((a) => a.status == 'tersedia').length} tersedia, '
-                      '${DummyData.alatList.where((a) => a.status == 'dipinjam').length} dipinjam',
+                  subtitle: alatList.isNotEmpty 
+                      ? '${alatList.where((a) => a.status == 'tersedia').length} tersedia, '
+                        '${alatList.where((a) => a.status == 'dipinjam').length} dipinjam'
+                      : 'Data alat belum tersedia',
                   color: AppColors.secondary600,
-                  onTap: () => _generateLaporanAlat(),
+                  onTap: alatList.isEmpty ? null : () => _generateLaporanAlat(alatList),
                 ),
               ],
             ),
@@ -152,83 +168,80 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     );
   }
 
-  int _calculateTotalDenda() {
-    return DummyData.peminjamanList.fold<int>(0, (sum, p) => sum + (p.totalDenda ?? 0));
+  int _calculateTotalDenda(List<Peminjaman> list) {
+    return list.fold<int>(0, (sum, p) => sum + (p.totalDenda ?? 0));
   }
 
-  void _generateLaporanPeminjaman() {
-    final laporanData = _buildLaporanPeminjamanData();
+  void _generateLaporanPeminjaman(List<Peminjaman> list) {
+    final laporanData = _buildLaporanPeminjamanData(list);
     _showLaporanPreview('Laporan Peminjaman', laporanData);
   }
 
-  void _generateLaporanPengembalian() {
-    final laporanData = _buildLaporanPengembalianData();
+  void _generateLaporanPengembalian(List<Peminjaman> list) {
+    final laporanData = _buildLaporanPengembalianData(list);
     _showLaporanPreview('Laporan Pengembalian', laporanData);
   }
 
-  void _generateLaporanDenda() {
-    final laporanData = _buildLaporanDendaData();
+  void _generateLaporanDenda(List<Peminjaman> list) {
+    final laporanData = _buildLaporanDendaData(list);
     _showLaporanPreview('Laporan Denda', laporanData);
   }
 
-  void _generateLaporanAlat() {
-    final laporanData = _buildLaporanAlatData();
+  void _generateLaporanAlat(List<Alat> list) {
+    final laporanData = _buildLaporanAlatData(list);
     _showLaporanPreview('Laporan Status Alat', laporanData);
   }
 
-  // ==================== BUILD LAPORAN DATA DUMMY ====================
+  // ==================== BUILD LAPORAN DATA ====================
 
-  List<Map<String, dynamic>> _buildLaporanPeminjamanData() {
+  List<Map<String, dynamic>> _buildLaporanPeminjamanData(List<Peminjaman> list) {
     final List<Map<String, dynamic>> data = [];
     
-    // Header info
     data.add({
       'type': 'header',
       'title': 'LAPORAN PEMINJAMAN ALAT',
-      'periode': 'Januari 2026',
+      'periode': 'Periode Aktif',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
-    // Summary
     data.add({
       'type': 'summary',
-      'total_peminjaman': DummyData.peminjamanList.length,
-      'menunggu': DummyData.peminjamanList.where((p) => p.status == 'menunggu').length,
-      'disetujui': DummyData.peminjamanList.where((p) => p.status == 'disetujui').length,
-      'sebagian': DummyData.peminjamanList.where((p) => p.status == 'sebagian').length,
-      'selesai': DummyData.peminjamanList.where((p) => p.status == 'selesai').length,
-      'ditolak': DummyData.peminjamanList.where((p) => p.status == 'ditolak').length,
+      'total_peminjaman': list.length,
+      'menunggu': list.where((p) => p.status == 'menunggu').length,
+      'disetujui': list.where((p) => p.status == 'disetujui').length,
+      'sebagian': list.where((p) => p.status == 'sebagian').length,
+      'selesai': list.where((p) => p.status == 'selesai').length,
+      'ditolak': list.where((p) => p.status == 'ditolak').length,
     });
 
-    // Detail transaksi
     data.add({'type': 'section_title', 'title': 'Detail Transaksi'});
     
-    for (var p in DummyData.peminjamanList) {
+    for (var p in list) {
       data.add({
         'type': 'detail',
         'id': p.id.substring(0, 8),
         'tanggal': DateFormat('dd/MM/yyyy').format(p.createdAt),
-        'peminjam': p.peminjam?.displayNameOrEmail ?? '-',
-        'jumlah_alat': p.totalItems,
-        'status': p.statusDisplay,
-        'petugas': p.petugas?.displayNameOrEmail ?? '-',
+        'peminjam': p.peminjam?.displayName ?? p.peminjam?.email ?? '-',
+        'jumlah_alat': p.items.length,
+        'status': p.status.toUpperCase(),
+        'petugas': p.petugas?.displayName ?? '-',
       });
     }
 
     return data;
   }
 
-  List<Map<String, dynamic>> _buildLaporanPengembalianData() {
+  List<Map<String, dynamic>> _buildLaporanPengembalianData(List<Peminjaman> list) {
     final List<Map<String, dynamic>> data = [];
     
-    final completedPeminjaman = DummyData.peminjamanList
+    final completedPeminjaman = list
         .where((p) => p.status == 'selesai' || p.status == 'sebagian')
         .toList();
 
     data.add({
       'type': 'header',
       'title': 'LAPORAN PENGEMBALIAN ALAT',
-      'periode': 'Januari 2026',
+      'periode': 'Periode Aktif',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
@@ -247,7 +260,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
           'type': 'detail',
           'kode_alat': item.alat?.kode ?? '-',
           'nama_alat': item.alat?.nama ?? '-',
-          'peminjam': p.peminjam?.displayNameOrEmail ?? '-',
+          'peminjam': p.peminjam?.displayName ?? p.peminjam?.email ?? '-',
           'tanggal_pinjam': DateFormat('dd/MM/yyyy').format(p.createdAt),
           'tanggal_kembali': item.dikembalikanPada != null 
               ? DateFormat('dd/MM/yyyy').format(item.dikembalikanPada!) 
@@ -261,27 +274,29 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     return data;
   }
 
-  List<Map<String, dynamic>> _buildLaporanDendaData() {
+  List<Map<String, dynamic>> _buildLaporanDendaData(List<Peminjaman> list) {
     final List<Map<String, dynamic>> data = [];
     
-    final peminjamanWithDenda = DummyData.peminjamanList
+    final peminjamanWithDenda = list
         .where((p) => (p.totalDenda ?? 0) > 0)
         .toList();
+
+    final totalDenda = _calculateTotalDenda(list);
 
     data.add({
       'type': 'header',
       'title': 'LAPORAN DENDA PEMINJAMAN',
-      'periode': 'Januari 2026',
+      'periode': 'Periode Aktif',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
     data.add({
       'type': 'summary',
-      'total_denda': _calculateTotalDenda(),
+      'total_denda': totalDenda,
       'jumlah_transaksi': peminjamanWithDenda.length,
       'rata_rata_denda': peminjamanWithDenda.isEmpty 
           ? 0 
-          : _calculateTotalDenda() ~/ peminjamanWithDenda.length,
+          : totalDenda ~/ peminjamanWithDenda.length,
     });
 
     data.add({'type': 'section_title', 'title': 'Detail Denda per Transaksi'});
@@ -290,36 +305,36 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
       data.add({
         'type': 'detail',
         'id_peminjaman': p.id.substring(0, 8),
-        'peminjam': p.peminjam?.displayNameOrEmail ?? '-',
+        'peminjam': p.peminjam?.displayName ?? p.peminjam?.email ?? '-',
         'total_denda': 'Rp ${NumberFormat('#,###').format(p.totalDenda)}',
-        'status': p.statusDisplay,
+        'status': p.status.toUpperCase(),
       });
     }
 
     return data;
   }
 
-  List<Map<String, dynamic>> _buildLaporanAlatData() {
+  List<Map<String, dynamic>> _buildLaporanAlatData(List<Alat> list) {
     final List<Map<String, dynamic>> data = [];
     
     data.add({
       'type': 'header',
       'title': 'LAPORAN STATUS ALAT',
-      'periode': 'Januari 2026',
+      'periode': 'Periode Aktif',
       'tanggal_cetak': DateFormat('dd MMMM yyyy, HH:mm').format(DateTime.now()),
     });
 
     data.add({
       'type': 'summary',
-      'total_alat': DummyData.alatList.length,
-      'tersedia': DummyData.alatList.where((a) => a.status == 'tersedia').length,
-      'dipinjam': DummyData.alatList.where((a) => a.status == 'dipinjam').length,
-      'nonaktif': DummyData.alatList.where((a) => a.status == 'nonaktif').length,
+      'total_alat': list.length,
+      'tersedia': list.where((a) => a.status == 'tersedia').length,
+      'dipinjam': list.where((a) => a.status == 'dipinjam').length,
+      'nonaktif': list.where((a) => a.status == 'nonaktif').length,
     });
 
     // Group by kategori
-    final kategoriGroups = <String, List<dynamic>>{};
-    for (var alat in DummyData.alatList) {
+    final kategoriGroups = <String, List<Alat>>{};
+    for (var alat in list) {
       final kategori = alat.namaKategori ?? 'Lainnya';
       kategoriGroups.putIfAbsent(kategori, () => []).add(alat);
     }
@@ -402,9 +417,9 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    user.displayNameOrEmail,
+                                    user.displayName ?? user.email,
                                     style: AppTypography.bodyLarge.copyWith(
-                                      color: Colors.white.withOpacity(0.9),
+                                      color: Colors.white.withValues(alpha: 0.9),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -412,16 +427,15 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                                 ],
                               ),
                             ),
-                            // Tombol Laporan & Logout
                             Row(
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.print, color: Colors.white),
+                                  icon: const Icon(Icons.print, color: Colors.white),
                                   tooltip: 'Cetak Laporan',
                                   onPressed: _showLaporanMenu,
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.logout, color: Colors.white),
+                                  icon: const Icon(Icons.logout, color: Colors.white),
                                   tooltip: 'Keluar',
                                   onPressed: _confirmLogout,
                                 ),
@@ -441,15 +455,14 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tombol Cetak Laporan (Mobile prominent)
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: OutlinedButton.icon(
                     onPressed: _showLaporanMenu,
-                    icon: Icon(Icons.print),
-                    label: Text('Cetak Laporan'),
+                    icon: const Icon(Icons.print),
+                    label: const Text('Cetak Laporan'),
                     style: OutlinedButton.styleFrom(
-                      minimumSize: Size(double.infinity, 48),
+                      minimumSize: const Size(double.infinity, 48),
                       foregroundColor: AppColors.secondary700,
                     ),
                   ),
@@ -463,7 +476,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _filters.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 8),
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final filter = _filters[index];
                       final isSelected = _selectedFilter == filter['id'];
@@ -476,14 +489,14 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                           });
                           _loadData();
                         },
-                        selectedColor: filter['color'].withOpacity(0.1),
-                        checkmarkColor: filter['color'],
+                        selectedColor: (filter['color'] as Color).withValues(alpha: 0.1),
+                        checkmarkColor: filter['color'] as Color,
                         labelStyle: TextStyle(
-                          color: isSelected ? filter['color'] : AppColors.neutral700,
+                          color: isSelected ? filter['color'] as Color : AppColors.neutral700,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         ),
                         side: BorderSide(
-                          color: isSelected ? filter['color'] : AppColors.neutral300,
+                          color: isSelected ? filter['color'] as Color : AppColors.neutral300,
                         ),
                       );
                     },
@@ -525,7 +538,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                           ],
                         );
                       }
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),
@@ -544,8 +557,8 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                       ),
                       TextButton.icon(
                         onPressed: _loadData,
-                        icon: Icon(Icons.refresh, size: 18),
-                        label: Text('Refresh'),
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('Refresh'),
                       ),
                     ],
                   ),
@@ -559,7 +572,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                     listener: (context, state) {
                       if (state is PeminjamanUpdated) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Status peminjaman diperbarui'),
                             backgroundColor: AppColors.success500,
                           ),
@@ -569,9 +582,9 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                     },
                     builder: (context, state) {
                       if (state is PeminjamanLoading) {
-                        return Center(
+                        return const Center(
                           child: Padding(
-                            padding: const EdgeInsets.all(32),
+                            padding: EdgeInsets.all(32),
                             child: CircularProgressIndicator(),
                           ),
                         );
@@ -584,14 +597,14 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                           icon: Icons.error_outline,
                           action: ElevatedButton(
                             onPressed: _loadData,
-                            child: Text('Coba Lagi'),
+                            child: const Text('Coba Lagi'),
                           ),
                         );
                       }
 
                       if (state is PeminjamanLoaded) {
                         if (state.peminjaman.isEmpty) {
-                          return EmptyState(
+                          return const EmptyState(
                             title: 'Tidak Ada Peminjaman',
                             subtitle: 'Tidak ada peminjaman dengan filter ini',
                             icon: Icons.inventory_2_outlined,
@@ -600,20 +613,20 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
 
                         return ListView.separated(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: state.peminjaman.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12),
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final peminjaman = state.peminjaman[index];
                             return _PetugasPeminjamanCard(
                               peminjaman: peminjaman,
-                              onApprove: peminjaman.canApprove
+                              onApprove: peminjaman.status == 'menunggu'
                                   ? () => _showApproveDialog(peminjaman)
                                   : null,
-                              onReject: peminjaman.canApprove
+                              onReject: peminjaman.status == 'menunggu'
                                   ? () => _showRejectDialog(peminjaman)
                                   : null,
-                              onProcessReturn: peminjaman.canReturn
+                              onProcessReturn: (peminjaman.status == 'disetujui' || peminjaman.status == 'sebagian')
                                   ? () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
@@ -638,7 +651,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
                         );
                       }
 
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),
@@ -656,15 +669,15 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Setujui Peminjaman?'),
+        title: const Text('Setujui Peminjaman?'),
         content: Text(
-          'Anda akan menyetujui peminjaman ${peminjaman.peminjam?.displayNameOrEmail} '
-          'untuk ${peminjaman.totalItems} alat.',
+          'Anda akan menyetujui peminjaman ${peminjaman.peminjam?.displayName ?? peminjaman.peminjam?.email} '
+          'untuk ${peminjaman.items.length} alat.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal'),
+            child: const Text('Batal'),
           ),
           FilledButton(
             onPressed: () {
@@ -672,7 +685,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
               final user = (context.read<AuthCubit>().state as Authenticated).user;
               context.read<PeminjamanCubit>().approvePeminjaman(peminjaman.id, user.id);
             },
-            child: Text('Setujui'),
+            child: const Text('Setujui'),
           ),
         ],
       ),
@@ -683,14 +696,14 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Tolak Peminjaman?'),
-        content: Text(
+        title: const Text('Tolak Peminjaman?'),
+        content: const Text(
           'Anda akan menolak peminjaman ini. Alat tidak akan dipinjamkan.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal'),
+            child: const Text('Batal'),
           ),
           FilledButton(
             onPressed: () {
@@ -701,7 +714,7 @@ class _PetugasDashboardPageState extends State<PetugasDashboardPage> {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.danger600,
             ),
-            child: Text('Tolak'),
+            child: const Text('Tolak'),
           ),
         ],
       ),
@@ -716,14 +729,14 @@ class _LaporanCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _LaporanCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
@@ -735,7 +748,7 @@ class _LaporanCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 28),
@@ -776,20 +789,18 @@ class _LaporanPreviewPage extends StatelessWidget {
         title: Text('Preview $title'),
         actions: [
           IconButton(
-            icon: Icon(Icons.share),
+            icon: const Icon(Icons.share),
             onPressed: () {
-              // Share laporan
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Bagikan laporan (dummy)')),
+                const SnackBar(content: Text('Bagikan laporan')),
               );
             },
           ),
           IconButton(
-            icon: Icon(Icons.print),
+            icon: const Icon(Icons.print),
             onPressed: () {
-              // Print laporan
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Cetak laporan (dummy)')),
+                const SnackBar(content: Text('Cetak laporan')),
               );
             },
           ),
@@ -826,11 +837,11 @@ class _LaporanPreviewPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Periode: ${item['periode']}',
-                style: AppTypography.bodyMedium.copyWith(color: Colors.white.withOpacity(0.8)),
+                style: AppTypography.bodyMedium.copyWith(color: Colors.white.withValues(alpha: 0.8)),
               ),
               Text(
                 'Dicetak: ${item['tanggal_cetak']}',
-                style: AppTypography.bodySmall.copyWith(color: Colors.white.withOpacity(0.8)),
+                style: AppTypography.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.8)),
               ),
             ],
           ),
@@ -839,7 +850,7 @@ class _LaporanPreviewPage extends StatelessWidget {
       case 'summary':
         return AppCard(
           color: AppColors.success50,
-          margin: EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -871,7 +882,7 @@ class _LaporanPreviewPage extends StatelessWidget {
 
       case 'detail':
         return AppCard(
-          margin: EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: item.entries
@@ -903,7 +914,7 @@ class _LaporanPreviewPage extends StatelessWidget {
         );
 
       default:
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
     }
   }
 }
@@ -926,14 +937,14 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      color: color.withOpacity(0.05),
+      color: color.withValues(alpha: 0.05),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -986,7 +997,7 @@ class _PetugasPeminjamanCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      peminjaman.peminjam?.displayNameOrEmail ?? '-',
+                      peminjaman.peminjam?.displayName ?? peminjaman.peminjam?.email ?? '-',
                       style: AppTypography.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -1017,24 +1028,9 @@ class _PetugasPeminjamanCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${peminjaman.totalItems} Alat',
+                '${peminjaman.items.length} Alat',
                 style: AppTypography.bodyMedium,
               ),
-              if (peminjaman.returnedItems > 0) ...[
-                const SizedBox(width: 16),
-                Icon(
-                  Icons.check_circle_outline,
-                  size: 18,
-                  color: AppColors.success500,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${peminjaman.returnedItems} Kembali',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.success700,
-                  ),
-                ),
-              ],
             ],
           ),
           if (onApprove != null || onReject != null || onProcessReturn != null) ...[
@@ -1045,8 +1041,8 @@ class _PetugasPeminjamanCard extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: onApprove,
-                      icon: Icon(Icons.check, size: 18),
-                      label: Text('Setujui'),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Setujui'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.success600,
                       ),
@@ -1057,8 +1053,8 @@ class _PetugasPeminjamanCard extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: onReject,
-                      icon: Icon(Icons.close, size: 18),
-                      label: Text('Tolak'),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('Tolak'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.danger600,
                       ),
@@ -1069,8 +1065,8 @@ class _PetugasPeminjamanCard extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: onProcessReturn,
-                      icon: Icon(Icons.assignment_return, size: 18),
-                      label: Text('Proses Kembali'),
+                      icon: const Icon(Icons.assignment_return, size: 18),
+                      label: const Text('Proses'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.info600,
                       ),

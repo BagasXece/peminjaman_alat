@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
 import 'package:peminjaman_alat/core/services/session_manager.dart';
+import 'package:peminjaman_alat/data/repositories/alat_repository_supabase.dart';
 import 'package:peminjaman_alat/data/repositories/auth_repository_supabase.dart';
+import 'package:peminjaman_alat/data/repositories/kategori_repository_supabase.dart';
+import 'package:peminjaman_alat/data/repositories/peminjaman_repository_supabase.dart';
+import 'package:peminjaman_alat/data/repositories/sub_kategori_repository_supabase.dart';
 import 'package:peminjaman_alat/data/repositories/user_repository_supabase.dart';
 import 'package:peminjaman_alat/presentation/blocs/auth/auth_state.dart';
+import 'package:peminjaman_alat/presentation/blocs/kategori/kategori_cubit.dart';
+import 'package:peminjaman_alat/presentation/blocs/peminjaman/peminjaman_admin_cubit.dart';
+import 'package:peminjaman_alat/presentation/blocs/sub_kategori/sub_kategori_cubit.dart';
 import 'package:peminjaman_alat/presentation/pages/admin/admin_dashboard_page.dart';
-import 'package:peminjaman_alat/presentation/pages/admin/user_management_page.dart';
-import 'package:peminjaman_alat/presentation/widgets/role_guard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repositories/alat_repository_dummy.dart';
-import 'data/repositories/peminjaman_repository_dummy.dart';
 import 'presentation/blocs/auth/auth_cubit.dart';
 import 'presentation/blocs/alat/alat_cubit.dart';
 import 'presentation/blocs/peminjaman/peminjaman_cubit.dart';
@@ -43,38 +46,36 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final supabaseClient = SupabaseService();
 
-    final alatRepository = AlatRepositoryDummy();
-    final peminjamanRepository = PeminjamanRepositoryDummy();
+    final alatRepository = AlatRepositorySupabase(supabaseClient);
+    final kategoriRepository = KategoriRepositorySupabase(supabaseClient);
+    final subKategoriRepository = SubKategoriRepositorySupabase(supabaseClient);
+    final peminjamanRepository = PeminjamanRepositorySupabase(supabaseClient);
     final authRepository = AuthRepositorySupabase(supabaseClient);
     final userRepository = UserRepositorySupabase(supabaseClient); // Buat sekali saja
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit(authRepository)),
-        BlocProvider(create: (context) => AlatCubit(alatRepository)),
-        BlocProvider(create: (context) => PeminjamanCubit(peminjamanRepository)),
-        // [PERBAIKAN] Sediakan UserCubit di root agar bisa diakses semua
-        BlocProvider(
-          create: (context) => UserCubit(userRepository),
-          lazy: true, // Jangan buat sampai diperlukan
-        ),
-      ],
+    BlocProvider(create: (context) => AuthCubit(authRepository)),
+    BlocProvider(create: (context) => AlatCubit(alatRepository)),
+    BlocProvider(create: (context) => KategoriCubit(kategoriRepository)),
+    BlocProvider(create: (context) => SubKategoriCubit(subKategoriRepository)),
+    // PeminjamanCubit untuk user biasa (lihat peminjamannya sendiri)
+    BlocProvider(create: (context) => PeminjamanCubit(peminjamanRepository), lazy: true),
+    // PeminjamanAdminCubit untuk admin/petugas (lihat semua)
+    BlocProvider(
+      create: (context) => PeminjamanAdminCubit(peminjamanRepository),
+      lazy: true,
+    ),
+    BlocProvider(
+      create: (context) => UserCubit(userRepository),
+      lazy: true,
+    ),
+  ],
       child: MaterialApp(
         title: 'Pinjamin',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const AppNavigator(),
-        routes: {
-          '/admin/users': (context) {
-            return RoleGuard(
-              allowedRoles: ['admin'],
-              child: BlocProvider.value(
-                value: context.read<UserCubit>()..loadUsers(), // Gunakan instance yang sama
-                child: const UserManagementPage(),
-              ),
-            );
-          },
-        },
       ),
     );
   }

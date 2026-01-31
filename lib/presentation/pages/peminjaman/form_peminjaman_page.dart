@@ -68,7 +68,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
     }
   }
 
-  void _submitPeminjaman() {
+    void _submitPeminjaman() {
     if (_selectedAlat.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -82,6 +82,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
     final authState = context.read<AuthCubit>().state;
     if (authState is! Authenticated) return;
 
+    // Konversi ke list items
     final items = _selectedAlat.entries.map((entry) {
       return {
         'alatId': entry.key,
@@ -89,9 +90,12 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
       };
     }).toList();
 
-    context.read<PeminjamanCubit>().createPeminjaman(authState.user.id, items);
+    // Panggil dengan hanya 2 parameter: userId dan items
+    context.read<PeminjamanCubit>().createPeminjaman(
+      authState.user.id, 
+      items,  // items diproses di cubit
+    );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

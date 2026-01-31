@@ -1,4 +1,4 @@
-// lib/presentation/blocs/peminjaman_cubit.dart
+// lib/presentation/blocs/peminjaman/peminjaman_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/peminjaman.dart';
@@ -24,13 +24,45 @@ class PeminjamanCubit extends Cubit<PeminjamanState> {
     }
   }
 
-  Future<void> createPeminjaman(String peminjamId, List<Map<String, dynamic>> items) async {
+  // UPDATE: Tambahkan parameter items
+  Future<void> createPeminjaman(
+    String peminjamId, 
+    List<Map<String, dynamic>> items,
+  ) async {
     emit(PeminjamanLoading());
     try {
-      final peminjaman = await _peminjamanRepository.createPeminjaman(peminjamId, items);
-      emit(PeminjamanCreated(peminjaman));
-      // Reload list
+      // 1. Buat peminjaman kosong dulu
+      final peminjaman = await _peminjamanRepository.createPeminjaman(peminjamId);
+      
+      // 2. Tambahkan setiap item satu per satu
+      for (final item in items) {
+        await _peminjamanRepository.addItemToPeminjaman(
+          peminjaman.id,
+          item['alatId'] as String,
+          item['jatuhTempo'] as DateTime,
+        );
+      }
+      
+      // 3. Reload untuk dapat data lengkap dengan relasi
+      final finalPeminjaman = await _peminjamanRepository.getPeminjamanById(peminjaman.id);
+      if (finalPeminjaman != null) {
+        emit(PeminjamanCreated(finalPeminjaman));
+      } else {
+        emit(PeminjamanError('Gagal memuat data peminjaman'));
+      }
+      
+      // 4. Refresh list
       await loadPeminjaman(peminjamId: peminjamId);
+    } catch (e) {
+      emit(PeminjamanError(e.toString()));
+    }
+  }
+
+  // Method untuk add item terpisah (jika diperlukan manual)
+  Future<void> addItemToPeminjaman(String peminjamanId, String alatId, DateTime jatuhTempo) async {
+    try {
+      await _peminjamanRepository.addItemToPeminjaman(peminjamanId, alatId, jatuhTempo);
+      await getPeminjamanDetail(peminjamanId);
     } catch (e) {
       emit(PeminjamanError(e.toString()));
     }
@@ -63,9 +95,11 @@ class PeminjamanCubit extends Cubit<PeminjamanState> {
   }) async {
     emit(PeminjamanLoading());
     try {
+      const petugasId = 'current_user_id'; // TODO: Get from auth
       final peminjaman = await _peminjamanRepository.processPengembalian(
-        peminjamanId,
-        itemIds,
+        peminjamanId: peminjamanId,
+        itemIds: itemIds,
+        petugasId: petugasId,
         catatan: catatan,
       );
       emit(PeminjamanUpdated(peminjaman));
