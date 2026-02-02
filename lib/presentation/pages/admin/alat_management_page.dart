@@ -10,12 +10,7 @@ import '../../widgets/app_card.dart';
 import '../../widgets/status_badge.dart';
 
 class AlatManagementPage extends StatefulWidget {
-  final bool isEmbedded;
-  
-  const AlatManagementPage({
-    Key? key, 
-    this.isEmbedded = false,
-  }) : super(key: key);
+  const AlatManagementPage({Key? key}) : super(key: key);
 
   @override
   State<AlatManagementPage> createState() => _AlatManagementPageState();
@@ -28,9 +23,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
   @override
   void initState() {
     super.initState();
-    if (!widget.isEmbedded) {
-      context.read<AlatCubit>().loadAlat();
-    }
+    context.read<AlatCubit>().loadAlat();
   }
 
   @override
@@ -47,7 +40,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 640;
 
-    Widget content = BlocConsumer<AlatCubit, AlatState>(
+    return BlocListener<AlatCubit, AlatState>(
       listener: (context, state) {
         if (state is AlatActionSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -66,122 +59,103 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
               action: SnackBarAction(
                 label: 'Retry',
                 textColor: Colors.white,
-                onPressed: () => _refresh(),
+                onPressed: _refresh,
               ),
             ),
           );
         }
       },
-      builder: (context, state) {
-        // Jika embedded, jangan pakai CustomScrollView lagi karena sudah di parent
-        if (widget.isEmbedded) {
-          return _buildContentBody(context, state, isMobile);
-        }
-        
-        // Jika standalone, pakai Scaffold + CustomScrollView
-        return Scaffold(
-          body: RefreshIndicator(
+      child: BlocBuilder<AlatCubit, AlatState>(
+        builder: (context, state) {
+          return RefreshIndicator(
             onRefresh: _refresh,
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  floating: true,
-                  title: Text('Manajemen Alat', style: AppTypography.h4),
-                  actions: [
-                    if (!isMobile)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showAddDialog(context),
-                          icon: Icon(Icons.add),
-                          label: Text('Tambah Alat'),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header & Actions (sama seperti kategori)
+                  if (isMobile) ...[
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddDialog(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Tambah Alat'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Search & Filter
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Cari alat...',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      context.read<AlatCubit>().loadAlat();
+                                    },
+                                  )
+                                : null,
+                          ),
+                          onChanged: (val) {
+                            context.read<AlatCubit>().loadAlat(search: val);
+                          },
                         ),
                       ),
-                  ],
-                ),
-                SliverToBoxAdapter(
-                  child: _buildContentBody(context, state, isMobile),
-                ),
-              ],
-            ),
-          ),
-          floatingActionButton: isMobile
-              ? FloatingActionButton.extended(
-                  onPressed: () => _showAddDialog(context),
-                  icon: Icon(Icons.add),
-                  label: Text('Tambah'),
-                )
-              : null,
-        );
-      },
-    );
-
-    return content;
-  }
-
-  Widget _buildContentBody(BuildContext context, AlatState state, bool isMobile) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Search & Filter
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Cari alat...',
-                    prefixIcon: Icon(Icons.search),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              context.read<AlatCubit>().loadAlat();
-                            },
-                          )
-                        : null,
+                      const SizedBox(width: 12),
+                      DropdownButton<String>(
+                        value: _selectedStatus,
+                        hint: const Text('Status'),
+                        underline: const SizedBox(),
+                        items: const [
+                          DropdownMenuItem(value: null, child: Text('Semua')),
+                          DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
+                          DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
+                          DropdownMenuItem(value: 'tidak_tersedia', child: Text('Tidak Tersedia')),
+                        ],
+                        onChanged: (val) {
+                          setState(() => _selectedStatus = val);
+                          context.read<AlatCubit>().loadAlat(status: val);
+                        },
+                      ),
+                    ],
                   ),
-                  onChanged: (val) {
-                    context.read<AlatCubit>().loadAlat(search: val);
-                  },
-                ),
-              ),
-              SizedBox(width: 12),
-              DropdownButton<String>(
-                value: _selectedStatus,
-                hint: Text('Status'),
-                items: [
-                  DropdownMenuItem(value: null, child: Text('Semua')),
-                  DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
-                  DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
-                  DropdownMenuItem(value: 'tidak_tersedia', child: Text('Tidak Tersedia')),
+                  const SizedBox(height: 16),
+
+                  // Content
+                  if (state is AlatLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (state is AlatLoaded) ...[
+                    if (state.alat.isEmpty)
+                      _buildEmptyState()
+                    else
+                      isMobile
+                          ? _buildMobileList(state.alat)
+                          : _buildDesktopList(state.alat),
+                  ] else if (state is AlatError)
+                    _buildErrorState(state.message),
+
+                  const SizedBox(height: 24),
                 ],
-                onChanged: (val) {
-                  setState(() => _selectedStatus = val);
-                  context.read<AlatCubit>().loadAlat(status: val);
-                },
               ),
-            ],
-          ),
-          SizedBox(height: 16),
-          
-          if (state is AlatLoading)
-            Center(child: CircularProgressIndicator())
-          else if (state is AlatLoaded) ...[
-            if (state.alat.isEmpty)
-              _buildEmptyState()
-            else
-              isMobile
-                  ? _buildMobileList(state.alat)
-                  : _buildDesktopList(state.alat),
-          ] else if (state is AlatError)
-            _buildErrorState(state.message),
-            
-          // FAB space untuk embedded mode
-          if (widget.isEmbedded && isMobile) SizedBox(height: 80),
-        ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -192,10 +166,10 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
         children: [
           // Header
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.neutral100,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Row(
               children: [
@@ -207,14 +181,14 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
               ],
             ),
           ),
-          Divider(height: 1),
+          const Divider(height: 1),
           // List
           ...alat.asMap().entries.map((entry) {
             final item = entry.value;
             return Column(
               children: [
                 ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Row(
                     children: [
                       Expanded(
@@ -244,12 +218,12 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit, size: 20),
+                              icon: const Icon(Icons.edit, size: 20),
                               onPressed: () => _showEditDialog(context, item),
                               tooltip: 'Edit',
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, size: 20, color: AppColors.danger500),
+                              icon: const Icon(Icons.delete, size: 20, color: AppColors.danger500),
                               onPressed: () => _confirmDelete(context, item),
                               tooltip: 'Hapus',
                             ),
@@ -259,7 +233,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                     ],
                   ),
                 ),
-                if (entry.key < alat.length - 1) Divider(height: 1),
+                if (entry.key < alat.length - 1) const Divider(height: 1),
               ],
             );
           }).toList(),
@@ -271,7 +245,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
   Widget _buildMobileList(List<Alat> alat) {
     return Column(
       children: alat.map((item) => AppCard(
-        margin: EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -283,7 +257,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.nama, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(item.kode, style: AppTypography.bodySmall.copyWith(color: AppColors.neutral500)),
                     ],
                   ),
@@ -291,35 +265,35 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                 StatusBadge(status: item.status),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.category, size: 16, color: AppColors.neutral500),
-                SizedBox(width: 8),
+                const Icon(Icons.category, size: 16, color: AppColors.neutral500),
+                const SizedBox(width: 8),
                 Text(item.namaKategori ?? '-', style: AppTypography.bodySmall),
               ],
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.build, size: 16, color: AppColors.neutral500),
-                SizedBox(width: 8),
+                const Icon(Icons.build, size: 16, color: AppColors.neutral500),
+                const SizedBox(width: 8),
                 Text('${item.kondisi} • ${item.lokasiSimpan ?? 'Tidak ada lokasi'}', 
                     style: AppTypography.bodySmall),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
                   onPressed: () => _showEditDialog(context, item),
-                  icon: Icon(Icons.edit, size: 18),
-                  label: Text('Edit'),
+                  icon: const Icon(Icons.edit, size: 18),
+                  label: const Text('Edit'),
                 ),
                 TextButton.icon(
                   onPressed: () => _confirmDelete(context, item),
-                  icon: Icon(Icons.delete, size: 18, color: AppColors.danger600),
+                  icon: const Icon(Icons.delete, size: 18, color: AppColors.danger600),
                   label: Text('Hapus', style: TextStyle(color: AppColors.danger600)),
                 ),
               ],
@@ -337,9 +311,9 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
         child: Column(
           children: [
             Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.neutral300),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text('Tidak ada data alat', style: AppTypography.h4.copyWith(color: AppColors.neutral500)),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text('Tambahkan alat baru untuk memulai', style: AppTypography.bodyMedium.copyWith(color: AppColors.neutral400)),
           ],
         ),
@@ -354,14 +328,14 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
         child: Column(
           children: [
             Icon(Icons.error_outline, size: 64, color: AppColors.danger500),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text('Terjadi Kesalahan', style: AppTypography.h4),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(message, textAlign: TextAlign.center),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _refresh,
-              child: Text('Coba Lagi'),
+              child: const Text('Coba Lagi'),
             ),
           ],
         ),
@@ -374,7 +348,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
       context: context,
       builder: (_) => BlocProvider.value(
         value: context.read<AlatCubit>(),
-        child: AlatFormDialog(),
+        child: const AlatFormDialog(),
       ),
     );
   }
@@ -393,15 +367,15 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Konfirmasi Hapus'),
+        title: const Text('Konfirmasi Hapus'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Yakin ingin menghapus alat berikut?'),
-            SizedBox(height: 16),
+            const Text('Yakin ingin menghapus alat berikut?'),
+            const SizedBox(height: 16),
             Container(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppColors.neutral100,
                 borderRadius: BorderRadius.circular(8),
@@ -414,7 +388,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                 ],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Catatan: Alat yang sedang dipinjam tidak dapat dihapus.',
               style: AppTypography.bodySmall.copyWith(color: AppColors.warning600),
@@ -422,14 +396,14 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<AlatCubit>().removeAlat(alat.id);
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger600),
-            child: Text('Hapus'),
+            child: const Text('Hapus'),
           ),
         ],
       ),

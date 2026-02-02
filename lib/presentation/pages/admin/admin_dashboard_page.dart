@@ -2,9 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
+import 'package:peminjaman_alat/data/repositories/kategori_repository_supabase.dart';
 import 'package:peminjaman_alat/data/repositories/peminjaman_repository_supabase.dart';
 import 'package:peminjaman_alat/presentation/blocs/auth/auth_state.dart';
+import 'package:peminjaman_alat/presentation/blocs/dashboard/dashboard_cubit.dart';
+import 'package:peminjaman_alat/presentation/blocs/kategori/kategori_cubit.dart';
+import 'package:peminjaman_alat/presentation/blocs/laporan/laporan_cubit.dart';
 import 'package:peminjaman_alat/presentation/blocs/peminjaman/peminjaman_admin_cubit.dart';
+import 'package:peminjaman_alat/presentation/pages/admin/dashboard_overview_page.dart';
+import 'package:peminjaman_alat/presentation/pages/admin/laporan_page.dart';
 import 'package:peminjaman_alat/presentation/pages/admin/user_management_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -26,17 +32,41 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int _selectedIndex = 0;
 
   final List<_NavItem> _navItems = [
-    _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Dashboard'),
-    _NavItem(icon: Icons.people_outline, activeIcon: Icons.people, label: 'Users'),
-    _NavItem(icon: Icons.category_outlined, activeIcon: Icons.category, label: 'Kategori'),
-    _NavItem(icon: Icons.build_outlined, activeIcon: Icons.build, label: 'Alat'),
-    _NavItem(icon: Icons.assignment_outlined, activeIcon: Icons.assignment, label: 'Peminjaman'),
-    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart, label: 'Laporan'),
+    _NavItem(
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard,
+      label: 'Dashboard',
+    ),
+    _NavItem(
+      icon: Icons.people_outline,
+      activeIcon: Icons.people,
+      label: 'Users',
+    ),
+    _NavItem(
+      icon: Icons.category_outlined,
+      activeIcon: Icons.category,
+      label: 'Kategori',
+    ),
+    _NavItem(
+      icon: Icons.build_outlined,
+      activeIcon: Icons.build,
+      label: 'Alat',
+    ),
+    _NavItem(
+      icon: Icons.assignment_outlined,
+      activeIcon: Icons.assignment,
+      label: 'Peminjaman',
+    ),
+    _NavItem(
+      icon: Icons.bar_chart_outlined,
+      activeIcon: Icons.bar_chart,
+      label: 'Laporan',
+    ),
   ];
 
   // Helper untuk mendapatkan judul berdasarkan index
   String get _currentTitle => _navItems[_selectedIndex].label;
-  
+
   // Helper untuk mendapatkan subtitle berdasarkan index
   String get _currentSubtitle {
     switch (_selectedIndex) {
@@ -84,7 +114,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         title: Text('Konfirmasi Keluar'),
         content: Text('Apakah Anda yakin ingin keluar?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Batal'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger600),
@@ -140,14 +173,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        _currentTitle, 
-                        style: AppTypography.h3.copyWith(color: Colors.white)
+                        _currentTitle,
+                        style: AppTypography.h3.copyWith(color: Colors.white),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         _currentSubtitle,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: Colors.white.withOpacity(0.8)
+                          color: Colors.white.withOpacity(0.8),
                         ),
                       ),
                     ],
@@ -171,28 +204,40 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       unselectedItemColor: AppColors.neutral500,
       selectedLabelStyle: AppTypography.labelSmall,
       unselectedLabelStyle: AppTypography.labelSmall,
-      items: _navItems.map((item) => BottomNavigationBarItem(
-        icon: Icon(item.icon),
-        activeIcon: Icon(item.activeIcon),
-        label: item.label,
-      )).toList(),
+      items: _navItems
+          .map(
+            (item) => BottomNavigationBarItem(
+              icon: Icon(item.icon),
+              activeIcon: Icon(item.activeIcon),
+              label: item.label,
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildContent() {
     switch (_selectedIndex) {
       case 0:
-        return _DashboardOverview();
+        return BlocProvider(
+          create: (context) => DashboardCubit(SupabaseService()),
+          child: const DashboardOverviewPage(),
+        );
       case 1:
         return RoleGuard(
-        allowedRoles: ['admin'],
-        child: BlocProvider.value(
-          value: context.read<UserCubit>()..loadUsers(),
-          child: const UserManagementPage(),
-        ),
-      );
+          allowedRoles: ['admin'],
+          child: BlocProvider.value(
+            value: context.read<UserCubit>()..loadUsers(),
+            child: const UserManagementPage(),
+          ),
+        );
       case 2:
-        return const KategoriManagementPage();
+        return BlocProvider(
+          create: (context) =>
+              KategoriCubit(KategoriRepositorySupabase(SupabaseService()))
+                ..loadKategori(),
+          child: const KategoriManagementPage(),
+        );
       case 3:
         return const AlatManagementPage();
       case 4:
@@ -203,9 +248,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           child: const PeminjamanListPage(),
         );
       case 5:
-        return _LaporanPage();
+        return BlocProvider(
+          create: (context) => LaporanCubit(SupabaseService()),
+          child: const LaporanPage(),
+        );
       default:
-        return _DashboardOverview();
+        return BlocProvider(
+          create: (context) => DashboardCubit(SupabaseService()),
+          child: const DashboardOverviewPage(),
+        );
     }
   }
 }
@@ -215,19 +266,4 @@ class _NavItem {
   final IconData activeIcon;
   final String label;
   _NavItem({required this.icon, required this.activeIcon, required this.label});
-}
-
-// Dashboard Overview tetap di file ini atau bisa dipisah juga
-class _DashboardOverview extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Dashboard Overview - Implementasi terpisah'));
-  }
-}
-
-class _LaporanPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Laporan Page - Implementasi terpisah'));
-  }
 }
