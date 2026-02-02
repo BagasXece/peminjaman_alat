@@ -136,13 +136,13 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
   }
 
   @override
-  Future<Peminjaman> rejectPeminjaman(String peminjamanId, String petugasId) async {
+  Future<Peminjaman> rejectOrcancelPeminjaman(String peminjamanId, String alasan) async {
     try {
       final result = await _supabase.client.rpc(
         'flutter_batalkan_peminjaman',
         params: {
           'p_peminjaman_id': peminjamanId,
-          'p_alasan': 'Ditolak oleh petugas',
+          'p_alasan': alasan,
         },
       );
       
@@ -157,31 +157,6 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
       return updated;
     } catch (e) {
       throw Exception('Gagal reject peminjaman: $e');
-    }
-  }
-
-  @override
-  Future<Peminjaman> cancelPeminjaman(String peminjamanId, String userId) async {
-    try {
-      final result = await _supabase.client.rpc(
-        'flutter_batalkan_peminjaman',
-        params: {
-          'p_peminjaman_id': peminjamanId,
-          'p_alasan': 'Dibatalkan oleh peminjam',
-        },
-      );
-      
-      if (result['status'] == 'error') {
-        throw Exception(result['message']);
-      }
-
-      final updated = await getPeminjamanById(peminjamanId);
-      if (updated == null) {
-        throw Exception('Peminjaman tidak ditemukan setelah cancel');
-      }
-      return updated;
-    } catch (e) {
-      throw Exception('Gagal cancel peminjaman: $e');
     }
   }
 

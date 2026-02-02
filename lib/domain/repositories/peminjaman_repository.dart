@@ -16,9 +16,7 @@ abstract class PeminjamanRepository {
   
   Future<Peminjaman> approvePeminjaman(String peminjamanId, String petugasId);
   
-  Future<Peminjaman> rejectPeminjaman(String peminjamanId, String petugasId);
-  
-  Future<Peminjaman> cancelPeminjaman(String peminjamanId, String userId);
+  Future<Peminjaman> rejectOrcancelPeminjaman(String peminjamanId, String alasan);
   
   Future<void> addItemToPeminjaman(String peminjamanId, String alatId, DateTime jatuhTempo);
   

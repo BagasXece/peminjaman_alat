@@ -6,32 +6,7 @@ import 'package:peminjaman_alat/domain/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // States
-abstract class AuthCState extends Equatable {
-  const AuthCState();
-  @override
-  List<Object?> get props => [];
-}
-
-class AuthInitial extends AuthCState {}
-
-class AuthLoading extends AuthCState {}
-
-class Authenticated extends AuthCState {
-  final AppUser user;
-  const Authenticated(this.user);
-  @override
-  List<Object?> get props => [user];
-}
-
-class Unauthenticated extends AuthCState {}
-
-class AuthError extends AuthCState {
-  final String message;
-  const AuthError(this.message);
-  @override
-  List<Object?> get props => [message];
-}
-
+part 'auth_state.dart';
 // Cubit
 class AuthCubit extends Cubit<AuthCState> {
   final AuthRepository _authRepository;

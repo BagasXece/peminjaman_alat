@@ -1,6 +1,5 @@
 // lib/core/network/supabase_client.dart
 
-import 'package:peminjaman_alat/core/services/session_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -20,20 +19,20 @@ class SupabaseService {
   Stream<AuthState> get authStateChanges => client.auth.onAuthStateChange;
   
   // [PERBAIKAN] Priority: Auth Metadata > SessionManager > null
-  String? get currentUserRole {
-    // Coba ambil dari metadata dulu
-    final metadataRole = client.auth.currentUser?.userMetadata?['role'] as String?;
-    if (metadataRole != null) return metadataRole;
+  // String? get currentUserRole {
+  //   // Coba ambil dari metadata dulu
+  //   final metadataRole = client.auth.currentUser?.userMetadata?['role'] as String?;
+  //   if (metadataRole != null) return metadataRole;
     
-    // Fallback ke SessionManager
-    final sessionRole = SessionManager().userRole;
-    if (sessionRole != null) return sessionRole;
+  //   // Fallback ke SessionManager
+  //   final sessionRole = SessionManager().userRole;
+  //   if (sessionRole != null) return sessionRole;
     
-    return null;
-  }
+  //   return null;
+  // }
   
   // Helper untuk cek apakah user adalah admin
-  bool get isAdmin => currentUserRole == 'admin';
+  // bool get isAdmin => currentUserRole == 'admin';
   
   Future<Map<String, dynamic>?> rpc(
     String functionName, {

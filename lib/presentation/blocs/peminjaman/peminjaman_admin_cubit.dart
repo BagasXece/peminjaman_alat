@@ -104,7 +104,7 @@ class PeminjamanAdminCubit extends Cubit<PeminjamanAdminState> {
     }
   }
 
-  Future<void> reject(String id, String alasan) async {
+  Future<void> rejectOrcancel(String peminjamanId, String alasan) async {
     if (alasan.trim().isEmpty) {
       emit(PeminjamanAdminError('Alasan penolakan wajib diisi'));
       return;
@@ -112,20 +112,9 @@ class PeminjamanAdminCubit extends Cubit<PeminjamanAdminState> {
 
     emit(PeminjamanAdminActionLoading());
     try {
-      await _repo.rejectPeminjaman(id, 'current_user_id');
+      await _repo.rejectOrcancelPeminjaman(peminjamanId, alasan);
       emit(PeminjamanAdminSuccess('Peminjaman ditolak: $alasan'));
-      await loadDetail(id);
-    } catch (e) {
-      emit(PeminjamanAdminError(e.toString()));
-    }
-  }
-
-  Future<void> cancel(String id) async {
-    emit(PeminjamanAdminActionLoading());
-    try {
-      await _repo.cancelPeminjaman(id, 'current_user_id');
-      emit(PeminjamanAdminSuccess('Peminjaman dibatalkan'));
-      await loadPeminjaman();
+      await loadDetail(peminjamanId);
     } catch (e) {
       emit(PeminjamanAdminError(e.toString()));
     }

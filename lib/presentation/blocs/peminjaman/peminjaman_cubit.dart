@@ -78,10 +78,10 @@ class PeminjamanCubit extends Cubit<PeminjamanState> {
     }
   }
 
-  Future<void> rejectPeminjaman(String id, String petugasId) async {
+  Future<void> rejectPeminjaman(String id, String alasan) async {
     emit(PeminjamanLoading());
     try {
-      final peminjaman = await _peminjamanRepository.rejectPeminjaman(id, petugasId);
+      final peminjaman = await _peminjamanRepository.rejectOrcancelPeminjaman(id, alasan);
       emit(PeminjamanUpdated(peminjaman));
     } catch (e) {
       emit(PeminjamanError(e.toString()));

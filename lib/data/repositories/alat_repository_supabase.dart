@@ -2,9 +2,11 @@
 // Tambahkan method untuk check ketersediaan dan validasi
 
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
+import 'package:peminjaman_alat/data/models/alat_model.dart';
 import 'package:peminjaman_alat/domain/entities/alat.dart';
 import 'package:peminjaman_alat/domain/repositories/alat_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 
 class AlatRepositorySupabase implements AlatRepository {
   final SupabaseService _supabase;
@@ -13,8 +15,33 @@ class AlatRepositorySupabase implements AlatRepository {
   AlatRepositorySupabase(this._supabase);
 
   // Stream untuk realtime updates
-  Stream<List<Map<String, dynamic>>> get alatStream => 
-      _supabase.client.from(_table).stream(primaryKey: ['id_alat']);
+  // Repository - Fix realtime stream untuk include relasi:
+Stream<List<Alat>> get alatStream => 
+    _supabase.client
+        .from(_table)
+        .stream(primaryKey: ['id_alat'])
+        .order('created_at', ascending: false)
+        .asyncMap((data) async {
+          // Fetch relasi secara manual karena Supabase realtime 
+          // belum support nested relations dalam stream
+          final enrichedData = await Future.wait(
+            data.map((item) async {
+              final detail = await _supabase.client
+                  .from(_table)
+                  .select('''
+                    *,
+                    sub_kategori_alat:sub_kategori_id (
+                      nama,
+                      kategori_alat:kategori_id (nama)
+                    )
+                  ''')
+                  .eq('id_alat', item['id_alat'])
+                  .single();
+              return detail;
+            }),
+          );
+          return enrichedData.map((e) => AlatModel.fromSupabase(e).toEntity()).toList();
+        });
 
   @override
   Future<List<Alat>> getAllAlat({String? status, String? search}) async {
@@ -63,6 +90,7 @@ class AlatRepositorySupabase implements AlatRepository {
             )
           ''')
           .eq('id_alat', id)
+          .filter('deleted_at', 'is', null)
           .maybeSingle();
 
       if (response == null) return null;

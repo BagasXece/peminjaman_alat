@@ -1,12 +1,11 @@
 // lib/presentation/pages/admin/user_management_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:peminjaman_alat/presentation/blocs/user/user_cubit.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/validators.dart';
 import '../../../domain/entities/app_user.dart';
-import '../../blocs/auth/auth_cubit.dart';
-import '../../blocs/auth/auth_state.dart';
 import '../../widgets/app_card.dart';
 
 class UserManagementPage extends StatefulWidget {

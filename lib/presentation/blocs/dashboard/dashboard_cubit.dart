@@ -46,7 +46,8 @@ class DashboardCubit extends Cubit<DashboardState> {
     try {
       final response = await _supabaseService.client
           .from('alat')
-          .select('status');
+          .select('status')
+          .filter('deleted_at', 'is', null);
       
       final data = response as List<dynamic>;
       return {
@@ -81,8 +82,9 @@ class DashboardCubit extends Cubit<DashboardState> {
   Future<Map<String, dynamic>> _fetchUserStats() async {
     try {
       final response = await _supabaseService.client
-          .from('users')
-          .select('role');
+          .from('app_users')
+          .select('role')
+          .filter('deleted_at', 'is', null);
       
       final data = response as List<dynamic>;
       return {

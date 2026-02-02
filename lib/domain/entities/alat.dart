@@ -5,13 +5,11 @@ class Alat {
   final String nama;
   final String subKategoriId;
   final String kondisi; // baik, rusak, hilang
-  final String status; // tersedia, dipinjam, nonaktif
+  final String status; // tersedia, dipesan, dipinjam, nonaktif, perbaikan, tidak_tersedia
   final String? lokasiSimpan;
   final DateTime? deletedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  // Relasi (untuk UI)
   final String? namaSubKategori;
   final String? namaKategori;
 
@@ -29,34 +27,7 @@ class Alat {
     this.namaSubKategori,
     this.namaKategori,
   });
-
-  Alat copyWith({
-    String? id,
-    String? kode,
-    String? nama,
-    String? subKategoriId,
-    String? kondisi,
-    String? status,
-    String? lokasiSimpan,
-    DateTime? deletedAt,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? namaSubKategori,
-    String? namaKategori,
-  }) {
-    return Alat(
-      id: id ?? this.id,
-      kode: kode ?? this.kode,
-      nama: nama ?? this.nama,
-      subKategoriId: subKategoriId ?? this.subKategoriId,
-      kondisi: kondisi ?? this.kondisi,
-      status: status ?? this.status,
-      lokasiSimpan: lokasiSimpan ?? this.lokasiSimpan,
-      deletedAt: deletedAt ?? this.deletedAt,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      namaSubKategori: namaSubKategori ?? this.namaSubKategori,
-      namaKategori: namaKategori ?? this.namaKategori,
-    );
-  }
+  
+  bool get isAvailable => status == 'tersedia' && kondisi == 'baik' && deletedAt == null;
+  bool get isDeleted => deletedAt != null;
 }

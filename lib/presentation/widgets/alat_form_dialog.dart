@@ -86,7 +86,7 @@ class _AlatFormDialogState extends State<AlatFormDialog> {
                   }
 
                   return DropdownButtonFormField<String>(
-                    value: _selectedSubKategoriId,
+                    initialValue: _selectedSubKategoriId,
                     decoration: InputDecoration(
                       labelText: 'Sub Kategori *',
                       prefixIcon: Icon(Icons.category),

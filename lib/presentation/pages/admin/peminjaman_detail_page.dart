@@ -523,7 +523,7 @@ class _PeminjamanDetailPageState extends State<PeminjamanDetailPage> {
                 return;
               }
               Navigator.pop(ctx);
-              context.read<PeminjamanAdminCubit>().reject(id, controller.text);
+              context.read<PeminjamanAdminCubit>().rejectOrcancel(id, controller.text);
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger600),
             child: const Text('Tolak'),

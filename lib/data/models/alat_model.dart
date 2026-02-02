@@ -1,26 +1,49 @@
 // lib/data/models/alat_model.dart
+import 'package:equatable/equatable.dart';
 import '../../domain/entities/alat.dart';
 
-class AlatModel extends Alat {
-  AlatModel({
-    required super.id,
-    required super.kode,
-    required super.nama,
-    required super.subKategoriId,
-    required super.kondisi,
-    required super.status,
-    super.lokasiSimpan,
-    super.deletedAt,
-    required super.createdAt,
-    required super.updatedAt,
-    super.namaSubKategori,
-    super.namaKategori,
+class AlatModel extends Equatable {
+  final String id;
+  final String kode;
+  final String nama;
+  final String subKategoriId;
+  final String kondisi;
+  final String status;
+  final String? lokasiSimpan;
+  final DateTime? deletedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String? namaSubKategori;
+  final String? namaKategori;
+
+  const AlatModel({
+    required this.id,
+    required this.kode,
+    required this.nama,
+    required this.subKategoriId,
+    required this.kondisi,
+    required this.status,
+    this.lokasiSimpan,
+    this.deletedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    this.namaSubKategori,
+    this.namaKategori,
   });
 
+  // Factory dari Supabase dengan handling relasi yang lebih robust
   factory AlatModel.fromSupabase(Map<String, dynamic> json) {
-    final subKategori = json['sub_kategori_alat'] as Map<String, dynamic>?;
-    final kategori = subKategori?['kategori_alat'] as Map<String, dynamic>?;
+    // Handle nested relations dengan null-safety
+    Map<String, dynamic>? subKategori;
+    Map<String, dynamic>? kategori;
     
+    if (json['sub_kategori_alat'] is Map) {
+      subKategori = json['sub_kategori_alat'] as Map<String, dynamic>;
+      if (subKategori['kategori_alat'] is Map) {
+        kategori = subKategori['kategori_alat'] as Map<String, dynamic>;
+      }
+    }
+
     return AlatModel(
       id: json['id_alat'] as String,
       kode: json['kode'] as String,
@@ -41,6 +64,23 @@ class AlatModel extends Alat {
     );
   }
 
+  // Convert ke Entity (Domain)
+  Alat toEntity() => Alat(
+        id: id,
+        kode: kode,
+        nama: nama,
+        subKategoriId: subKategoriId,
+        kondisi: kondisi,
+        status: status,
+        lokasiSimpan: lokasiSimpan,
+        deletedAt: deletedAt,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        namaSubKategori: namaSubKategori,
+        namaKategori: namaKategori,
+      );
+
+  // Untuk insert/update ke Supabase (exclude computed fields)
   Map<String, dynamic> toJson() {
     return {
       'id_alat': id,
@@ -50,9 +90,12 @@ class AlatModel extends Alat {
       'kondisi': kondisi,
       'status': status,
       'lokasi': lokasiSimpan,
-      'deleted_at': deletedAt?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
     };
   }
+
+  @override
+  List<Object?> get props => [
+        id, kode, nama, subKategoriId, kondisi, status,
+        lokasiSimpan, deletedAt, namaSubKategori, namaKategori
+      ];
 }
