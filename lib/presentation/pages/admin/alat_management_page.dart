@@ -40,6 +40,16 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 640;
 
+    const statusOptions = [
+      DropdownMenuItem(value: null, child: Text('Semua')),
+      DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
+      DropdownMenuItem(value: 'dipesan', child: Text('Dipesan')),
+      DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
+      DropdownMenuItem(value: 'nonaktif', child: Text('Nonaktif')),
+      DropdownMenuItem(value: 'perbaikan', child: Text('Perbaikan')),
+      DropdownMenuItem(value: 'tidak_tersedia', child: Text('Tidak Tersedia')),
+    ];
+
     return BlocListener<AlatCubit, AlatState>(
       listener: (context, state) {
         if (state is AlatActionSuccess) {
@@ -51,18 +61,18 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
             ),
           );
         } else if (state is AlatError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppColors.danger600,
-              behavior: SnackBarBehavior.floating,
-              action: SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: _refresh,
-              ),
-            ),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     content: Text(state.message),
+          //     backgroundColor: AppColors.danger600,
+          //     behavior: SnackBarBehavior.floating,
+          //     action: SnackBarAction(
+          //       label: 'Retry',
+          //       textColor: Colors.white,
+          //       onPressed: _refresh,
+          //     ),
+          //   ),
+          // );
         }
       },
       child: BlocBuilder<AlatCubit, AlatState>(
@@ -113,16 +123,11 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      DropdownButton<String>(
+                      DropdownButton<String?>(
                         value: _selectedStatus,
                         hint: const Text('Status'),
                         underline: const SizedBox(),
-                        items: const [
-                          DropdownMenuItem(value: null, child: Text('Semua')),
-                          DropdownMenuItem(value: 'tersedia', child: Text('Tersedia')),
-                          DropdownMenuItem(value: 'dipinjam', child: Text('Dipinjam')),
-                          DropdownMenuItem(value: 'tidak_tersedia', child: Text('Tidak Tersedia')),
-                        ],
+                        items: statusOptions,
                         onChanged: (val) {
                           setState(() => _selectedStatus = val);
                           context.read<AlatCubit>().loadAlat(status: val);
@@ -169,15 +174,29 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.neutral100,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
             ),
             child: Row(
               children: [
-                Expanded(flex: 2, child: Text('Nama Alat', style: AppTypography.labelLarge)),
-                Expanded(child: Text('Kategori', style: AppTypography.labelLarge)),
-                Expanded(child: Text('Kondisi', style: AppTypography.labelLarge)),
-                Expanded(child: Text('Status', style: AppTypography.labelLarge)),
-                SizedBox(width: 100, child: Text('Aksi', style: AppTypography.labelLarge)),
+                Expanded(
+                  flex: 2,
+                  child: Text('Nama Alat', style: AppTypography.labelLarge),
+                ),
+                Expanded(
+                  child: Text('Kategori', style: AppTypography.labelLarge),
+                ),
+                Expanded(
+                  child: Text('Kondisi', style: AppTypography.labelLarge),
+                ),
+                Expanded(
+                  child: Text('Status', style: AppTypography.labelLarge),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: Text('Aksi', style: AppTypography.labelLarge),
+                ),
               ],
             ),
           ),
@@ -188,7 +207,10 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
             return Column(
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   title: Row(
                     children: [
                       Expanded(
@@ -196,34 +218,73 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item.nama, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                            Text(item.kode, style: AppTypography.bodySmall.copyWith(color: AppColors.neutral500)),
+                            Text(
+                              item.nama,
+                              style: AppTypography.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              item.kode,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.neutral500,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      Expanded(child: Text(item.namaKategori ?? '-', style: AppTypography.bodyMedium)),
+                      Expanded(
+                        child: Text(
+                          item.namaKategori ?? '-',
+                          style: AppTypography.bodyMedium,
+                        ),
+                      ),
                       Expanded(
                         child: Text(
                           item.kondisi.toUpperCase(),
                           style: AppTypography.bodyMedium.copyWith(
-                            color: item.kondisi == 'baik' ? AppColors.success600 : AppColors.danger600,
+                            color: item.kondisi == 'baik'
+                                ? AppColors.success600
+                                : AppColors.danger600,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      Expanded(child: StatusBadge(status: item.status)),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: StatusBadge(status: item.status),
+                        ),
+                      ),
+
                       SizedBox(
-                        width: 100,
+                        width: 120,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.build_circle,
+                                size: 20,
+                                color: item.kondisi == 'baik'
+                                    ? AppColors.success600
+                                    : AppColors.warning600,
+                              ),
+                              onPressed: () =>
+                                  _showUpdateKondisiDialog(context, item),
+                              tooltip: 'Update Kondisi',
+                            ),
                             IconButton(
                               icon: const Icon(Icons.edit, size: 20),
                               onPressed: () => _showEditDialog(context, item),
                               tooltip: 'Edit',
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, size: 20, color: AppColors.danger500),
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: AppColors.danger500,
+                              ),
                               onPressed: () => _confirmDelete(context, item),
                               tooltip: 'Hapus',
                             ),
@@ -244,63 +305,109 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
 
   Widget _buildMobileList(List<Alat> alat) {
     return Column(
-      children: alat.map((item) => AppCard(
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
+      children: alat
+          .map(
+            (item) => AppCard(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.nama, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Text(item.kode, style: AppTypography.bodySmall.copyWith(color: AppColors.neutral500)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.nama,
+                              style: AppTypography.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.kode,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.neutral500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatusBadge(status: item.status),
                     ],
                   ),
-                ),
-                StatusBadge(status: item.status),
-              ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.category,
+                        size: 16,
+                        color: AppColors.neutral500,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        item.namaKategori ?? '-',
+                        style: AppTypography.bodySmall,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.build,
+                        size: 16,
+                        color: AppColors.neutral500,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${item.kondisi} • ${item.lokasiSimpan ?? 'Tidak ada lokasi'}',
+                        style: AppTypography.bodySmall,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () =>
+                            _showUpdateKondisiDialog(context, item),
+                        icon: Icon(
+                          Icons.build_circle,
+                          size: 20,
+                          color: item.kondisi == 'baik'
+                              ? AppColors.success600
+                              : AppColors.warning600,
+                        ),
+                        label: const Text('Update Status'),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => _showEditDialog(context, item),
+                        icon: const Icon(Icons.edit, size: 18),
+                        label: const Text('Edit'),
+                      ),
+                      TextButton.icon(
+                        onPressed: () => _confirmDelete(context, item),
+                        icon: const Icon(
+                          Icons.delete,
+                          size: 18,
+                          color: AppColors.danger600,
+                        ),
+                        label: Text(
+                          'Hapus',
+                          style: TextStyle(color: AppColors.danger600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.category, size: 16, color: AppColors.neutral500),
-                const SizedBox(width: 8),
-                Text(item.namaKategori ?? '-', style: AppTypography.bodySmall),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.build, size: 16, color: AppColors.neutral500),
-                const SizedBox(width: 8),
-                Text('${item.kondisi} • ${item.lokasiSimpan ?? 'Tidak ada lokasi'}', 
-                    style: AppTypography.bodySmall),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: () => _showEditDialog(context, item),
-                  icon: const Icon(Icons.edit, size: 18),
-                  label: const Text('Edit'),
-                ),
-                TextButton.icon(
-                  onPressed: () => _confirmDelete(context, item),
-                  icon: const Icon(Icons.delete, size: 18, color: AppColors.danger600),
-                  label: Text('Hapus', style: TextStyle(color: AppColors.danger600)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      )).toList(),
+          )
+          .toList(),
     );
   }
 
@@ -310,11 +417,23 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.neutral300),
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 64,
+              color: AppColors.neutral300,
+            ),
             const SizedBox(height: 16),
-            Text('Tidak ada data alat', style: AppTypography.h4.copyWith(color: AppColors.neutral500)),
+            Text(
+              'Tidak ada data alat',
+              style: AppTypography.h4.copyWith(color: AppColors.neutral500),
+            ),
             const SizedBox(height: 8),
-            Text('Tambahkan alat baru untuk memulai', style: AppTypography.bodyMedium.copyWith(color: AppColors.neutral400)),
+            Text(
+              'Tambahkan alat baru untuk memulai',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.neutral400,
+              ),
+            ),
           ],
         ),
       ),
@@ -333,10 +452,7 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
             const SizedBox(height: 8),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _refresh,
-              child: const Text('Coba Lagi'),
-            ),
+            ElevatedButton(onPressed: _refresh, child: const Text('Coba Lagi')),
           ],
         ),
       ),
@@ -363,6 +479,19 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
     );
   }
 
+  void _showUpdateKondisiDialog(BuildContext context, Alat alat) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<AlatCubit>(),
+        child: AlatFormDialog(
+          alat: alat,
+          isKondisiOnly: true, // Mode khusus!
+        ),
+      ),
+    );
+  }
+
   void _confirmDelete(BuildContext context, Alat alat) {
     showDialog(
       context: context,
@@ -383,7 +512,12 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(alat.nama, style: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    alat.nama,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   Text(alat.kode, style: AppTypography.bodySmall),
                 ],
               ),
@@ -391,12 +525,17 @@ class _AlatManagementPageState extends State<AlatManagementPage> {
             const SizedBox(height: 8),
             Text(
               'Catatan: Alat yang sedang dipinjam tidak dapat dihapus.',
-              style: AppTypography.bodySmall.copyWith(color: AppColors.warning600),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.warning600,
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);

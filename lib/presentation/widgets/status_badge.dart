@@ -42,6 +42,8 @@ class StatusBadge extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'tersedia':
         return 'Tersedia';
+      case 'tidak_tersedia':
+        return 'Tidak tersedia';
       case 'dipinjam':
         return 'Dipinjam';
       case 'nonaktif':

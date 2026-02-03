@@ -2,98 +2,109 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:peminjaman_alat/domain/repositories/alat_repository.dart';
 import '../../../domain/entities/alat.dart';
-import '../../../data/repositories/alat_repository_supabase.dart';
 
 part 'alat_state.dart';
 
 class AlatCubit extends Cubit<AlatState> {
-  final AlatRepositorySupabase _alatRepository;
-  StreamSubscription? _alatSubscription;
+  final AlatRepository _repository;
+  StreamSubscription? _streamSubscription;
 
-  AlatCubit(this._alatRepository) : super(AlatInitial()) {
+  AlatCubit(this._repository) : super(AlatInitial()) {
     _initRealtime();
   }
 
   void _initRealtime() {
-    // Subscribe to realtime changes
-    _alatSubscription = _alatRepository.alatStream.listen((_) {
-      // Auto refresh saat ada perubahan data
-      if (state is AlatLoaded) {
-        loadAlat();
-      }
-    });
+    _streamSubscription = _repository.alatStream.listen(
+      (alatList) {
+        // Hanya emit jika sedang loaded untuk avoid interrupt loading
+        if (state is AlatLoaded) {
+          final current = state as AlatLoaded;
+          emit(AlatLoaded(
+            alatList,
+            filterStatus: current.filterStatus,
+            searchQuery: current.searchQuery,
+          ));
+        }
+      },
+      onError: (e) {
+        emit(AlatError('Realtime error: $e'));
+      },
+    );
   }
 
   @override
   Future<void> close() {
-    _alatSubscription?.cancel();
+    _streamSubscription?.cancel();
     return super.close();
   }
 
   Future<void> loadAlat({String? status, String? search}) async {
     emit(AlatLoading());
     try {
-      final alat = await _alatRepository.getAllAlat(status: status, search: search);
+      final alat = await _repository.getAllAlat(status: status, search: search);
       emit(AlatLoaded(alat, filterStatus: status, searchQuery: search));
     } catch (e) {
       emit(AlatError(e.toString()));
     }
   }
 
-  Future<void> loadAlatTersedia() async {
-    emit(AlatLoading());
-    try {
-      final alat = await _alatRepository.getAlatTersedia();
-      emit(AlatLoaded(alat, filterStatus: 'tersedia'));
-    } catch (e) {
-      emit(AlatError(e.toString()));
-    }
-  }
-
-  // Refresh untuk pull-to-refresh
   Future<void> refreshAlat() async {
-    final currentState = state;
-    String? currentStatus;
-    String? currentSearch;
-    
-    if (currentState is AlatLoaded) {
-      currentStatus = currentState.filterStatus;
-      currentSearch = currentState.searchQuery;
+    final current = state;
+    if (current is AlatLoaded) {
+      await loadAlat(
+        status: current.filterStatus,
+        search: current.searchQuery,
+      );
+    } else {
+      await loadAlat();
     }
-    
-    await loadAlat(status: currentStatus, search: currentSearch);
   }
 
   Future<void> addAlat({
     required String nama,
     required String subKategoriId,
-    required String lokasi,
+    String? lokasi,
     String kondisi = 'baik',
   }) async {
     emit(AlatLoading());
     try {
-      // Validasi client-side
-      if (nama.trim().length < 3) {
-        throw Exception('Nama alat minimal 3 karakter');
-      }
-      
-      await _alatRepository.createAlat(
+      await (_repository as dynamic).createAlat(
         nama: nama,
         subKategoriId: subKategoriId,
         lokasi: lokasi,
         kondisi: kondisi,
       );
       
-      emit(AlatActionSuccess('Alat berhasil ditambahkan'));
-      await loadAlat(); // Refresh list
+      emit(const AlatActionSuccess('Alat berhasil ditambahkan'));
+      await loadAlat(); // Refresh
     } catch (e) {
       emit(AlatError(e.toString()));
-      // Revert ke state sebelumnya jika ada
-      if (state is AlatLoaded) {
-        final prevState = state as AlatLoaded;
-        emit(prevState);
-      }
+      // Revert ke state sebelumnya
+      await loadAlat();
+    }
+  }
+
+  Future<void> updateKondisiAlat(
+    String id,
+    String kondisi, {
+    String? catatan,
+  }) async {
+    emit(AlatLoading());
+    try {
+      // ✅ Gunakan method khusus update kondisi (via stored procedure)
+      await _repository.updateKondisiAlat(
+        alatId: id,
+        kondisiBaru: kondisi,
+        catatan: catatan,
+      );
+      
+      emit(AlatActionSuccess('Kondisi alat berhasil diupdate ke "$kondisi"'));
+      await loadAlat(); // Refresh untuk lihat perubahan status
+    } catch (e) {
+      emit(AlatError(e.toString()));
+      await loadAlat(); // Revert
     }
   }
 
@@ -101,54 +112,34 @@ class AlatCubit extends Cubit<AlatState> {
     required String id,
     String? nama,
     String? lokasi,
-    String? kondisi,
     String? subKategoriId,
   }) async {
     emit(AlatLoading());
     try {
-      if (nama != null && nama.trim().length < 3) {
-        throw Exception('Nama alat minimal 3 karakter');
-      }
-
-      await _alatRepository.updateAlat(
+      await _repository.updateAlat(
         id: id,
         nama: nama,
         lokasi: lokasi,
-        kondisi: kondisi,
         subKategoriId: subKategoriId,
       );
       
-      emit(AlatActionSuccess('Alat berhasil diupdate'));
+      emit(const AlatActionSuccess('Alat berhasil diperbarui'));
       await loadAlat();
     } catch (e) {
       emit(AlatError(e.toString()));
+      await loadAlat();
     }
   }
 
   Future<void> removeAlat(String id) async {
     emit(AlatLoading());
     try {
-      await _alatRepository.deleteAlat(id);
-      emit(AlatActionSuccess('Alat berhasil dihapus'));
+      await _repository.deleteAlat(id);
+      emit(const AlatActionSuccess('Alat berhasil dihapus'));
       await loadAlat();
     } catch (e) {
       emit(AlatError(e.toString()));
-    }
-  }
-
-  Future<void> updateKondisiAlat(String id, String kondisi, {String? catatan}) async {
-    try {
-      if (kondisi == 'rusak' || kondisi == 'hilang') {
-        // Konfirmasi tambahan untuk kondisi kritis
-        await _alatRepository.updateAlat(id: id, kondisi: kondisi);
-      } else {
-        await _alatRepository.updateAlat(id: id, kondisi: kondisi);
-      }
-      
       await loadAlat();
-      emit(AlatActionSuccess('Kondisi alat berhasil diupdate'));
-    } catch (e) {
-      emit(AlatError(e.toString()));
     }
   }
 }

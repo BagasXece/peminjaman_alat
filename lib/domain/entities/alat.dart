@@ -9,7 +9,7 @@ class Alat {
   final String? lokasiSimpan;
   final DateTime? deletedAt;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
   final String? namaSubKategori;
   final String? namaKategori;
 

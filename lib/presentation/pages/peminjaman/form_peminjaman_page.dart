@@ -28,7 +28,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AlatCubit>().loadAlatTersedia();
+    context.read<AlatCubit>().loadAlat();
   }
 
   void _selectAlat(Alat alat) {
@@ -172,7 +172,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
                             icon: Icon(Icons.clear),
                             onPressed: () {
                               _searchController.clear();
-                              context.read<AlatCubit>().loadAlatTersedia();
+                              context.read<AlatCubit>().loadAlat();
                             },
                           )
                         : null,
@@ -269,7 +269,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
                         subtitle: state.message,
                         icon: Icons.error_outline,
                         action: ElevatedButton(
-                          onPressed: () => context.read<AlatCubit>().loadAlatTersedia(),
+                          onPressed: () => context.read<AlatCubit>().loadAlat(),
                           child: Text('Coba Lagi'),
                         ),
                       );

@@ -69,7 +69,7 @@ class UserRepositorySupabase implements UserRepository {
 
       // Ambil data user yang baru dibuat
       await Future.delayed(Duration(milliseconds: 500)); // Tunggu trigger
-      
+
       final userData = await _supabase.client
           .from('app_users')
           .select()
@@ -77,7 +77,6 @@ class UserRepositorySupabase implements UserRepository {
           .single();
 
       return AppUserModel.fromSupabase(userData);
-      
     } on FunctionException catch (e) {
       throw Exception('Edge Function Error: ${e.details}');
     } catch (e) {
@@ -94,8 +93,6 @@ class UserRepositorySupabase implements UserRepository {
     String? role,
   }) async {
     try {
-      print('DEBUG: Updating user via Edge Function: $userId');
-      
       final response = await _supabase.client.functions.invoke(
         'update-user',
         body: {
@@ -105,7 +102,7 @@ class UserRepositorySupabase implements UserRepository {
             if (password != null) 'password': password,
             if (displayName != null) 'display_name': displayName,
             if (role != null) 'role': role,
-          }
+          },
         },
       );
 
@@ -128,9 +125,7 @@ class UserRepositorySupabase implements UserRepository {
           .single();
 
       return AppUserModel.fromSupabase(userData);
-      
     } on FunctionException catch (e) {
-      print('DEBUG: Edge Function Error: ${e.details}');
       throw Exception('Gagal update user: ${e.details}');
     } catch (e) {
       throw Exception('Gagal update user: $e');
@@ -156,7 +151,6 @@ class UserRepositorySupabase implements UserRepository {
       //     .from('app_users')
       //     .update({'deleted_at': DateTime.now().toIso8601String()})
       //     .eq('id_user', userId);
-      
     } on FunctionException catch (e) {
       throw Exception('Gagal menghapus user: ${e.details}');
     } catch (e) {
