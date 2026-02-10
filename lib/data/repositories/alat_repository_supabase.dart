@@ -42,7 +42,11 @@ class AlatRepositorySupabase implements AlatRepository {
       });
 
   @override
-  Future<List<Alat>> getAllAlat({String? status, String? search}) async {
+  Future<List<Alat>> getAllAlat({
+    String? status,
+    String? search,
+    List<String>? excludedStatuses,
+  }) async {
     try {
       // Base query dengan join ke sub_kategori dan kategori
       var query = _supabase.client
@@ -63,11 +67,19 @@ class AlatRepositorySupabase implements AlatRepository {
               kategori_alat:kategori_id (nama)
             )
           ''')
-          .isFilter('deleted_at', null); // Soft delete filter
+          .isFilter('deleted_at', null);
 
       // Filter by status
       if (status != null && status.isNotEmpty) {
         query = query.eq('status', status);
+      }
+
+      if (excludedStatuses != null && excludedStatuses.isNotEmpty) {
+        query = query.not(
+          'status',
+          'in',
+          '(${excludedStatuses.map((s) => "'$s'").join(',')})',
+        );
       }
 
       // Search by nama or kode (case insensitive)
@@ -448,7 +460,6 @@ class AlatRepositorySupabase implements AlatRepository {
       // Ini bisa dilakukan via stored procedure atau manual migration
 
       return newAlat;
-
     } catch (e) {
       throw Exception('Gagal update sub kategori: $e');
     }

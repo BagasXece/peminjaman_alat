@@ -40,10 +40,10 @@ class AlatCubit extends Cubit<AlatState> {
     return super.close();
   }
 
-  Future<void> loadAlat({String? status, String? search}) async {
+  Future<void> loadAlat({String? status, String? search, List<String>? excludedStatuses}) async {
     emit(AlatLoading());
     try {
-      final alat = await _repository.getAllAlat(status: status, search: search);
+      final alat = await _repository.getAllAlat(status: status, search: search, excludedStatuses: excludedStatuses);
       emit(AlatLoaded(alat, filterStatus: status, searchQuery: search));
     } catch (e) {
       emit(AlatError(e.toString()));

@@ -6,6 +6,7 @@ import 'package:peminjaman_alat/presentation/blocs/blocs.dart';
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
 import 'package:peminjaman_alat/core/services/session_manager.dart';
 import 'package:peminjaman_alat/presentation/pages/admin/admin_dashboard_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/pages/login_page.dart';
@@ -17,13 +18,22 @@ import 'presentation/pages/petugas_dashboard_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  } catch (e) {
+    print("Clear prefs: $e");
+  }
+
   await Supabase.initialize(
     url: "https://ewqalbtfcpntbpullukp.supabase.co",
     anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3cWFsYnRmY3BudGJwdWxsdWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNjg2OTgsImV4cCI6MjA3MDc0NDY5OH0.Pg1SYw-2MJTFAXpPu8UNqDHnw47LwaDHmutZCvFwEAU",
+    
   );
 
   // [PENTING] Initialize SessionManager
   await SessionManager().initialize();
+  await Future.delayed(const Duration(milliseconds: 500));
 
   runApp(const MyApp());
 }

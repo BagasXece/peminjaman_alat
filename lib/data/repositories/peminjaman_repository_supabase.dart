@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:peminjaman_alat/core/network/supabase_client.dart';
 import 'package:peminjaman_alat/domain/entities/peminjaman.dart';
 import 'package:peminjaman_alat/domain/entities/peminjaman_item.dart';
@@ -94,20 +95,29 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
   @override
   Future<Peminjaman> createPeminjaman(String peminjamId) async {
     try {
-      final response = await _supabase.client
-          .from(_table)
-          .insert({
-            'peminjam_id': peminjamId,
-            'status': 'menunggu',
-            'created_at': DateTime.now().toIso8601String(),
-          })
-          .select()
-          .single();
-
-      return _mapToPeminjaman(response);
-    } catch (e) {
-      throw Exception('Gagal membuat peminjaman: $e');
+    // Gunakan function flutter_buat_peminjaman yang sudah ada
+    final result = await _supabase.client.rpc(
+      'flutter_buat_peminjaman',
+      params: {
+        'p_peminjam_id': peminjamId,
+      },
+    );
+    
+    if (result['status'] == 'error') {
+      throw Exception(result['message']);
     }
+
+    // Ambil data lengkap menggunakan ID yang dikembalikan
+    final peminjamanId = result['peminjaman_id'] as String;
+    final updated = await getPeminjamanById(peminjamanId);
+    if (updated == null) {
+      throw Exception('Peminjaman tidak ditemukan setelah dibuat');
+    }
+    return updated;
+  } catch (e) {
+    debugPrint('gagal: $e');
+    throw Exception('Gagal membuat peminjaman: $e');
+  }
   }
 
   @override
@@ -131,6 +141,7 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
       }
       return updated;
     } catch (e) {
+      debugPrint('Gagal: $e');
       throw Exception('Gagal approve peminjaman: $e');
     }
   }
@@ -202,7 +213,6 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
   Future<Peminjaman> processPengembalian({
     required String peminjamanId,
     required List<String> itemIds,
-    required String petugasId,
     String? catatan,
   }) async {
     try {
@@ -262,6 +272,7 @@ class PeminjamanRepositorySupabase implements PeminjamanRepository {
       }
       return updated;
     } catch (e) {
+
       throw Exception('Gagal perpanjang peminjaman: $e');
     }
   }

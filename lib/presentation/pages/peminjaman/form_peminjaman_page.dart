@@ -28,7 +28,7 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AlatCubit>().loadAlat();
+    context.read<AlatCubit>().loadAlat(status: 'tersedia');
   }
 
   void _selectAlat(Alat alat) {
@@ -147,13 +147,13 @@ class _FormPeminjamanPageState extends State<FormPeminjamanPage> {
                 ],
               ),
             );
-          } else if (state is PeminjamanError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.danger500,
-              ),
-            );
+          // } else if (state is PeminjamanError) {
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(
+          //       content: Text(state.message),
+          //       backgroundColor: AppColors.danger500,
+          //     ),
+          //   );
           }
         },
         builder: (context, peminjamanState) {

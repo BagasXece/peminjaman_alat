@@ -131,7 +131,6 @@ class PeminjamanAdminCubit extends Cubit<PeminjamanAdminState> {
       await _repo.processPengembalian(
         peminjamanId: peminjamanId,
         itemIds: itemIds,
-        petugasId: 'current_user_id',
         catatan: catatan,
       );
       emit(PeminjamanAdminSuccess('Pengembalian berhasil diproses'));

@@ -95,11 +95,9 @@ class PeminjamanCubit extends Cubit<PeminjamanState> {
   }) async {
     emit(PeminjamanLoading());
     try {
-      const petugasId = 'current_user_id'; // TODO: Get from auth
       final peminjaman = await _peminjamanRepository.processPengembalian(
         peminjamanId: peminjamanId,
         itemIds: itemIds,
-        petugasId: petugasId,
         catatan: catatan,
       );
       emit(PeminjamanUpdated(peminjaman));

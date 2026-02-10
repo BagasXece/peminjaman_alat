@@ -39,7 +39,7 @@ class PeminjamanItem {
   // Helper getters untuk UI
   bool get isDikembalikan => status == 'dikembalikan';
   bool get isDipinjam => status == 'dipinjam';
-  bool get isTerlambat => jatuhTempo.isBefore(DateTime.now()) && isDipinjam;
+  bool get isTerlambat => jatuhTempo.isBefore(DateTime.now().toLocal()) && isDipinjam;
   
   int get hariTerlambat {
     if (!isTerlambat) return 0;

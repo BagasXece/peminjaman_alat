@@ -7,7 +7,7 @@ abstract class AlatRepository {
   Stream<List<Alat>> get alatStream;
 
   // Read
-  Future<List<Alat>> getAllAlat({String? status, String? search});
+  Future<List<Alat>> getAllAlat({String? status, String? search, List<String>? excludedStatuses});
   Future<Alat?> getAlatById(String id);
   Future<List<Alat>> getAlatTersedia();
   

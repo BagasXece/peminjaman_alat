@@ -412,6 +412,13 @@ class _ReturnItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    debugPrint('------------------------------');
+  debugPrint('now: ${DateTime.now()}');
+  debugPrint('now local: ${DateTime.now().toLocal()}');
+  debugPrint('jatuhTempo: ${item.jatuhTempo}');
+  debugPrint('jatuhTempo local: ${item.jatuhTempo.toLocal()}');
+  debugPrint('------------------------------');
     final isTerlambat = item.isTerlambat;
     final dateFormat = DateFormat('dd MMM yyyy');
 

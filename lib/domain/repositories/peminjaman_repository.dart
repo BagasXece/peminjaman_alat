@@ -25,7 +25,6 @@ abstract class PeminjamanRepository {
   Future<Peminjaman> processPengembalian({
     required String peminjamanId,
     required List<String> itemIds,
-    required String petugasId,
     String? catatan,
   });
   
